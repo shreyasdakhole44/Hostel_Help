@@ -1,42 +1,61 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import Navbar from '../../components/Navbar';
 import StatusBadge from '../../components/StatusBadge';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
+const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4', '#14b8a6'];
+const STATUS_COLORS = {
+  PENDING: '#f59e0b',
+  ASSIGNED: '#3b82f6',
+  IN_PROGRESS: '#8b5cf6',
+  RESOLVED_PENDING: '#10b981',
+  CLOSED: '#64748b',
+  REOPENED: '#ef4444'
+};
+
 const WardenDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
-  const [stats, setStats] = useState({ assigned: 0, inProgress: 0, resolved: 0 });
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchComplaints();
+    fetchDashboardData();
   }, []);
 
-  const fetchComplaints = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const res = await api.get('/api/warden/complaints');
-      const data = res.data;
-      setComplaints(data);
-      setStats({
-        assigned: data.filter(c => c.status === 'ASSIGNED').length,
-        inProgress: data.filter(c => c.status === 'IN_PROGRESS').length,
-        resolved: data.filter(c => c.status === 'RESOLVED').length,
-      });
+      const complaintsRes = await api.get('/api/warden/complaints');
+      setComplaints(complaintsRes.data);
+
+      const analyticsRes = await api.get('/api/warden/analytics');
+      setAnalytics(analyticsRes.data);
     } catch (err) {
-      console.error('Error fetching warden complaints', err);
+      console.error('Error fetching warden dashboard data', err);
     } finally {
       setLoading(false);
     }
   };
 
+  const summary = analytics?.summary || {
+    totalComplaints: 0,
+    resolvedComplaints: 0,
+    pendingComplaints: 0,
+    inProgressComplaints: 0,
+    averageRating: 0.0
+  };
+
   const statCards = [
-    { label: 'Assigned (New)', value: stats.assigned, color: '#0ea5e9', icon: '📥' },
-    { label: 'In Progress', value: stats.inProgress, color: '#7c3aed', icon: '🔧' },
-    { label: 'Resolved', value: stats.resolved, color: '#059669', icon: '✅' },
+    { label: 'Assigned Complaints', value: summary.totalComplaints, color: '#3b82f6', icon: '📥' },
+    { label: 'Pending Action', value: summary.pendingComplaints, color: '#ef4444', icon: '⏳' },
+    { label: 'Resolved Complaints', value: summary.resolvedComplaints, color: '#10b981', icon: '✅' },
+    { label: 'Average Rating', value: `${summary.averageRating} ★`, color: '#f59e0b', icon: '⭐' },
   ];
 
   return (
@@ -45,28 +64,27 @@ const WardenDashboard = () => {
       <div style={styles.content}>
         
         {/* Welcome banner */}
-        <div style={styles.banner} className="gradient-sky">
+        <div style={styles.banner}>
           <div>
             <h2 style={styles.bannerTitle}>Welcome back, Warden {user?.name}! 👋</h2>
-            <p style={styles.bannerSub}>Here is a summary of complaints assigned to your supervision</p>
+            <p style={styles.bannerSub}>Review, update, and finalize complaints submitted in your assigned hostels.</p>
           </div>
           <button
             onClick={() => navigate('/warden/complaints')}
             style={styles.actionBtn}
-            className="hover-btn"
           >
-            Manage Complaints
+            Manage complaints
           </button>
         </div>
 
-        {/* Stats */}
         {loading ? (
           <p style={styles.loading}>Loading Dashboard...</p>
         ) : (
           <>
+            {/* Stats */}
             <div style={styles.grid}>
               {statCards.map((card) => (
-                <div key={card.label} style={styles.card} className="hover-card">
+                <div key={card.label} style={styles.card}>
                   <div style={styles.cardLeft}>
                     <p style={styles.cardLabel}>{card.label}</p>
                     <p style={{ ...styles.cardValue, color: card.color }}>{card.value}</p>
@@ -74,6 +92,59 @@ const WardenDashboard = () => {
                   <span style={styles.cardIcon}>{card.icon}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Charts section */}
+            <div style={styles.chartsGrid}>
+              
+              {/* Category Pie */}
+              <div style={styles.chartCard}>
+                <h4 style={styles.chartTitle}>📂 Category Distribution</h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={analytics?.categoryDistribution || []}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={75}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {(analytics?.categoryDistribution || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Status Doughnut */}
+              <div style={styles.chartCard}>
+                <h4 style={styles.chartTitle}>🔄 Complaint Status Ratios</h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={analytics?.statusDistribution || []}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={0}
+                      outerRadius={75}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {(analytics?.statusDistribution || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || '#94a3b8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
             </div>
 
             {/* Complaints list */}
@@ -104,7 +175,7 @@ const WardenDashboard = () => {
                     </thead>
                     <tbody>
                       {complaints.slice(0, 5).map((c) => (
-                        <tr key={c.id} style={styles.tr} className="hover-row">
+                        <tr key={c.id} style={styles.tr}>
                           <td style={styles.td}>#{c.id}</td>
                           <td style={{ ...styles.td, fontWeight: '600' }}>{c.title}</td>
                           <td style={styles.td}>{c.categoryName}</td>
@@ -115,7 +186,6 @@ const WardenDashboard = () => {
                             <button
                               onClick={() => navigate(`/warden/complaints/${c.id}`)}
                               style={styles.viewBtn}
-                              className="hover-btn"
                             >
                               Details
                             </button>
@@ -161,7 +231,7 @@ const styles = {
   loading: { textAlign: 'center', color: '#64748b', padding: '40px' },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '20px',
     marginBottom: '32px',
   },
@@ -172,13 +242,33 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
     border: '1px solid #e2e8f0',
   },
   cardLeft: {},
   cardLabel: { fontSize: '13px', color: '#64748b', fontWeight: '600', margin: '0 0 6px 0' },
-  cardValue: { fontSize: '32px', fontWeight: '800', margin: 0 },
-  cardIcon: { fontSize: '36px' },
+  cardValue: { fontSize: '28px', fontWeight: '800', margin: 0 },
+  cardIcon: { fontSize: '32px' },
+  chartsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+    marginBottom: '32px',
+  },
+  chartCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '20px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+    height: '330px',
+  },
+  chartTitle: {
+    fontSize: '15px',
+    fontWeight: '700',
+    color: '#1e293b',
+    margin: '0 0 16px 0',
+  },
   section: { marginTop: '8px' },
   sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
   sectionTitle: { fontSize: '18px', fontWeight: '700', color: '#1e293b', margin: 0 },
@@ -191,7 +281,7 @@ const styles = {
     borderRadius: '12px',
     border: '1px solid #e2e8f0',
     overflowX: 'auto',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
   },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
   th: { padding: '16px 20px', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase' },

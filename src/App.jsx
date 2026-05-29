@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import PrivateRoute from './components/PrivateRoute';
 
 // Public pages
@@ -40,44 +41,46 @@ const RoleRedirect = () => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <ToastContainer position="top-right" autoClose={3000} />
-        <Routes>
+      <NotificationProvider>
+        <BrowserRouter>
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Routes>
 
-          {/* public routes */}
-          <Route path="/"             element={<Landing />}  />
-          <Route path="/login"        element={<Login />}    />
-          <Route path="/register"     element={<Register />} />
-          <Route path="/unauthorized" element={<h2 style={{textAlign:'center', marginTop:'50px'}}>403 — Access Denied</h2>} />
+            {/* public routes */}
+            <Route path="/"             element={<Landing />}  />
+            <Route path="/login"        element={<Login />}    />
+            <Route path="/register"     element={<Register />} />
+            <Route path="/unauthorized" element={<h2 style={{textAlign:'center', marginTop:'50px'}}>403 — Access Denied</h2>} />
 
-          {/* role redirect */}
-          <Route path="/dashboard"    element={<RoleRedirect />} />
+            {/* role redirect */}
+            <Route path="/dashboard"    element={<RoleRedirect />} />
 
-          {/* student routes */}
-          <Route element={<PrivateRoute role="STUDENT" />}>
-            <Route path="/student/dashboard"        element={<StudentDashboard />}  />
-            <Route path="/student/complaints"        element={<MyComplaints />}      />
-            <Route path="/student/complaints/new"    element={<SubmitComplaint />}   />
-            <Route path="/student/complaints/:id"    element={<ComplaintDetail />}   />
-          </Route>
+            {/* student routes */}
+            <Route element={<PrivateRoute role="STUDENT" />}>
+              <Route path="/student/dashboard"        element={<StudentDashboard />}  />
+              <Route path="/student/complaints"        element={<MyComplaints />}      />
+              <Route path="/student/complaints/new"    element={<SubmitComplaint />}   />
+              <Route path="/student/complaints/:id"    element={<ComplaintDetail />}   />
+            </Route>
 
-          {/* warden routes */}
-          <Route element={<PrivateRoute role="WARDEN" />}>
-            <Route path="/warden/dashboard"          element={<WardenDashboard />}       />
-            <Route path="/warden/complaints"          element={<AssignedComplaints />}    />
-            <Route path="/warden/complaints/:id"      element={<WardenComplaintDetail />} />
-          </Route>
+            {/* warden routes */}
+            <Route element={<PrivateRoute role="WARDEN" />}>
+              <Route path="/warden/dashboard"          element={<WardenDashboard />}       />
+              <Route path="/warden/complaints"          element={<AssignedComplaints />}    />
+              <Route path="/warden/complaints/:id"      element={<WardenComplaintDetail />} />
+            </Route>
 
-          {/* admin routes */}
-          <Route element={<PrivateRoute role="ADMIN" />}>
-            <Route path="/admin/dashboard"   element={<AdminDashboard />}  />
-            <Route path="/admin/complaints"  element={<AllComplaints />}   />
-            <Route path="/admin/users"       element={<UserManagement />}  />
-            <Route path="/admin/categories"  element={<Categories />}      />
-          </Route>
+            {/* admin routes */}
+            <Route element={<PrivateRoute role="ADMIN" />}>
+              <Route path="/admin/dashboard"   element={<AdminDashboard />}  />
+              <Route path="/admin/complaints"  element={<AllComplaints />}   />
+              <Route path="/admin/users"       element={<UserManagement />}  />
+              <Route path="/admin/categories"  element={<Categories />}      />
+            </Route>
 
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

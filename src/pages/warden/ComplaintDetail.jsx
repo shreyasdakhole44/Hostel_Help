@@ -11,7 +11,7 @@ const ComplaintDetail = () => {
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState(''); // 'RESOLVED' or 'REJECTED'
+  const [updateStatus, setUpdateStatus] = useState(''); // 'RESOLVED_PENDING' or 'REJECTED'
   const [remark, setRemark] = useState('');
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const ComplaintDetail = () => {
       const res = await api.get(`/api/warden/complaints/${id}`);
       setComplaint(res.data);
       if (res.data.status === 'IN_PROGRESS') {
-        setUpdateStatus('RESOLVED');
+        setUpdateStatus('RESOLVED_PENDING');
       }
       setRemark(res.data.wardenRemark || '');
     } catch (err) {
@@ -42,7 +42,7 @@ const ComplaintDetail = () => {
         wardenRemark: 'Started working on this issue.',
       });
       setComplaint(res.data);
-      setUpdateStatus('RESOLVED');
+      setUpdateStatus('RESOLVED_PENDING');
       setRemark('Started working on this issue.');
       toast.success('Complaint status updated to IN PROGRESS');
     } catch (err) {
@@ -137,21 +137,21 @@ const ComplaintDetail = () => {
           </div>
 
           {/* Existing remarks */}
-          {complaint.wardenRemark && (complaint.status === 'RESOLVED' || complaint.status === 'REJECTED') && (
+          {complaint.wardenRemark && (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED' || complaint.status === 'REJECTED') && (
             <div style={{
               ...styles.remarkBox,
-              borderLeftColor: complaint.status === 'RESOLVED' ? '#10b981' : '#ef4444',
-              backgroundColor: complaint.status === 'RESOLVED' ? '#ecfdf5' : '#fef2f2',
+              borderLeftColor: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#10b981' : '#ef4444',
+              backgroundColor: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#ecfdf5' : '#fef2f2',
             }}>
               <p style={{
                 ...styles.remarkLabel,
-                color: complaint.status === 'RESOLVED' ? '#047857' : '#b91c1c',
+                color: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#047857' : '#b91c1c',
               }}>
                 💬 Warden Remark ({complaint.status})
               </p>
               <p style={{
                 ...styles.remarkText,
-                color: complaint.status === 'RESOLVED' ? '#065f46' : '#991b1b',
+                color: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#065f46' : '#991b1b',
               }}>{complaint.wardenRemark}</p>
             </div>
           )}
@@ -181,9 +181,9 @@ const ComplaintDetail = () => {
                     <input
                       type="radio"
                       name="statusChoice"
-                      value="RESOLVED"
-                      checked={updateStatus === 'RESOLVED'}
-                      onChange={() => setUpdateStatus('RESOLVED')}
+                      value="RESOLVED_PENDING"
+                      checked={updateStatus === 'RESOLVED_PENDING'}
+                      onChange={() => setUpdateStatus('RESOLVED_PENDING')}
                       style={styles.radioInput}
                     />
                     <span style={{color: '#059669', fontWeight: '600'}}>Mark Resolved</span>
@@ -218,8 +218,8 @@ const ComplaintDetail = () => {
                   disabled={submitting}
                   style={{
                     ...styles.primaryBtn,
-                    backgroundColor: updateStatus === 'RESOLVED' ? '#059669' : '#dc2626',
-                    boxShadow: updateStatus === 'RESOLVED' ? '0 4px 12px rgba(5, 150, 105, 0.2)' : '0 4px 12px rgba(220, 38, 38, 0.2)'
+                    backgroundColor: updateStatus === 'RESOLVED_PENDING' ? '#059669' : '#dc2626',
+                    boxShadow: updateStatus === 'RESOLVED_PENDING' ? '0 4px 12px rgba(5, 150, 105, 0.2)' : '0 4px 12px rgba(220, 38, 38, 0.2)'
                   }}
                 >
                   {submitting ? 'Submitting...' : 'Submit Resolution'}

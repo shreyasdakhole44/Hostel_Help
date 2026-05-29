@@ -82,12 +82,46 @@ const AllComplaints = () => {
 
   return (
     <div style={styles.page}>
-      <Navbar />
-      <div style={styles.content}>
+      <div className="print:hidden">
+        <Navbar />
+      </div>
+      <div style={styles.content} className="print-area">
         
-        <div style={styles.header}>
+        {/* Printable Report Header (Visible only in PDF/Print) */}
+        <div className="hidden print:block" style={{ borderBottom: '2px solid #4f46e5', paddingBottom: '16px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#4f46e5', margin: 0 }}>🏠 Hostel Help</h1>
+              <p style={{ fontSize: '13px', color: '#475569', margin: '4px 0 0 0' }}>Official Hostel Complaints Resolution Summary Report</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>Generated on: {new Date().toLocaleString()}</p>
+              <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>Filters: Status [{statusFilter}], Category [{categoryFilter}]</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '32px', marginTop: '16px', backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <div>
+              <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>Total Filtered</span>
+              <p style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b', margin: 0 }}>{filtered.length} Complaints</p>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>Pending Action</span>
+              <p style={{ fontSize: '18px', fontWeight: '800', color: '#d97706', margin: 0 }}>{filtered.filter(c => c.status === 'PENDING').length}</p>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>In Progress</span>
+              <p style={{ fontSize: '18px', fontWeight: '800', color: '#7c3aed', margin: 0 }}>{filtered.filter(c => c.status === 'IN_PROGRESS' || c.status === 'ASSIGNED').length}</p>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>Resolved Cases</span>
+              <p style={{ fontSize: '18px', fontWeight: '800', color: '#059669', margin: 0 }}>{filtered.filter(c => c.status === 'RESOLVED').length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.header} className="print:hidden">
           <h2 style={styles.title}>All Hostel Complaints</h2>
-          <div style={styles.headerActions}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <input
               type="text"
               placeholder="Search by title, student or warden..."
@@ -95,11 +129,31 @@ const AllComplaints = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={styles.searchBar}
             />
+            <button
+              onClick={() => window.print()}
+              style={{
+                backgroundColor: '#7c3aed',
+                color: '#ffffff',
+                border: 'none',
+                padding: '10px 18px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 6px -1px rgba(124, 58, 237, 0.1), 0 2px 4px -1px rgba(124, 58, 237, 0.06)'
+              }}
+              className="hover-btn"
+            >
+              <span>📊</span> Export PDF Report
+            </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div style={styles.filtersBar}>
+        <div style={styles.filtersBar} className="print:hidden">
           <div style={styles.filterGroup}>
             <span style={styles.filterLabel}>Status:</span>
             <select
@@ -137,18 +191,18 @@ const AllComplaints = () => {
             <p style={styles.emptyText}>No complaints match the criteria.</p>
           </div>
         ) : (
-          <div style={styles.tableContainer}>
+          <div style={styles.tableContainer} className="print-clean">
             <table style={styles.table}>
               <thead>
                 <tr>
                   <th style={styles.th}>ID</th>
-                  <th style={styles.th}>Title</th>
+                  <th style={styles.th}>Title & Details</th>
                   <th style={styles.th}>Category</th>
                   <th style={styles.th}>Student</th>
                   <th style={styles.th}>Warden</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Submitted</th>
-                  <th style={styles.th}>Assignment Action</th>
+                  <th style={styles.th} className="print:hidden">Assignment Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,7 +216,7 @@ const AllComplaints = () => {
                       <td style={styles.td}>
                         <div style={styles.titleCol}>
                           <span style={styles.complaintTitle}>{c.title}</span>
-                          <span style={styles.complaintDesc}>{c.description.substring(0, 70)}{c.description.length > 70 ? '...' : ''}</span>
+                          <span style={styles.complaintDesc}>{c.description.substring(0, 100)}{c.description.length > 100 ? '...' : ''}</span>
                           {c.wardenRemark && (
                             <span style={styles.remarkSnippet}>💬 <strong>Remark:</strong> {c.wardenRemark}</span>
                           )}
@@ -179,7 +233,7 @@ const AllComplaints = () => {
                       </td>
                       <td style={styles.td}><StatusBadge status={c.status} /></td>
                       <td style={styles.td}>{new Date(c.createdAt).toLocaleDateString()}</td>
-                      <td style={styles.td}>
+                      <td style={styles.td} className="print:hidden">
                         {c.status === 'PENDING' ? (
                           <div style={styles.assignForm}>
                             <select
@@ -214,6 +268,7 @@ const AllComplaints = () => {
       </div>
     </div>
   );
+
 };
 
 const styles = {

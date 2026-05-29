@@ -1,4 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+
+@theme {
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-200: #ddd6fe;
+  --color-primary-300: #c4b5fd;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+}
+
+
+
+
 
 * {
   box-sizing: border-box;
@@ -65,4 +84,46 @@ code {
   background-color: #f8fafc !important;
 }
 
+/* Print Utilities for PDF Generation */
+@media print {
+  body * {
+    visibility: hidden;
+  }
 
+  /* Selectively make the print ticket visible */
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide print buttons and navigation */
+  .no-print,
+  nav,
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  /* Disable screen-only borders and shadows */
+  .print-clean {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    padding: 24px !important;
+  }
+}

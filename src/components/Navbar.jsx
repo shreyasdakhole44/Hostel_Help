@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications() || { notifications: [], unreadCount: 0 };
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -148,6 +152,124 @@ const Navbar = () => {
       <div style={styles.right}>
         {user ? (
           <>
+            {/* Notification Bell */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748b',
+                  borderRadius: '50%',
+                  transition: 'background 0.2s',
+                  backgroundColor: dropdownOpen ? '#f1f5f9' : 'transparent'
+                }}
+              >
+                🔔
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '2px',
+                    right: '2px',
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    borderRadius: '50%',
+                    width: '16px',
+                    height: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown menu */}
+              {dropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '40px',
+                  right: 0,
+                  width: '320px',
+                  backgroundColor: '#ffffff',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  zIndex: 200,
+                  padding: '12px 0',
+                  maxHeight: '400px',
+                  overflowY: 'auto'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px 8px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b' }}>Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={() => {
+                          markAllAsRead();
+                          setDropdownOpen(false);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#4f46e5',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+
+                  <div style={{ padding: '4px 0' }}>
+                    {!notifications || notifications.length === 0 ? (
+                      <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '13px', padding: '16px 0', margin: 0 }}>
+                        No notifications yet
+                      </p>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            markAsRead(n.id);
+                            setDropdownOpen(false);
+                            const baseRoute = user.role === 'STUDENT' ? 'student' : user.role === 'WARDEN' ? 'warden' : 'admin';
+                            navigate(`/${baseRoute}/complaints/${n.complaintId}`);
+                          }}
+                          style={{
+                            padding: '12px 16px',
+                            borderBottom: '1px solid #f8fafc',
+                            cursor: 'pointer',
+                            backgroundColor: n.read ? '#ffffff' : '#f5f3ff',
+                            transition: 'background 0.2s',
+                            textAlign: 'left'
+                          }}
+                        >
+                          <p style={{ fontSize: '13px', color: '#334155', margin: '0 0 4px 0', fontWeight: n.read ? '500' : '600', lineHeight: '1.4' }}>
+                            {n.message}
+                          </p>
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                            {new Date(n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <span style={styles.name}>{user.name}</span>
             <span style={{
               ...styles.badge,
