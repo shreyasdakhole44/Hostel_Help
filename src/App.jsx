@@ -30,7 +30,7 @@ import Categories       from './pages/admin/Categories';
 
 // redirect after login based on role
 const RoleRedirect = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); 
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'ADMIN')   return <Navigate to="/admin/dashboard"   replace />;
   if (user.role === 'WARDEN')  return <Navigate to="/warden/dashboard"  replace />;
