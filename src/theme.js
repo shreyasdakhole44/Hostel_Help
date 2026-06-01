@@ -14,6 +14,7 @@ export const THEME = {
     gray50: '#F9FAFB',      // Page background
     gray100: '#F3F4F6',
     gray200: '#E5E7EB',     // Borders
+    gray400: '#9CA3AF',     // Semi-muted text/borders
     gray500: '#6B7280',     // Muted text
     gray700: '#374151',     // Body text
     gray900: '#111827',     // Headings

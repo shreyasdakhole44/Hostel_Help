@@ -33,7 +33,10 @@ const Sidebar = ({ isOpen, isDesktop, toggleSidebar }) => {
     ],
     WARDEN: [
       { path: '/warden/dashboard', label: 'Dashboard', icon: '🏠' },
-      { path: '/warden/complaints', label: 'My Complaints', icon: '📋', badgeKey: 'wardenAction' }
+      { path: '/warden/complaints', label: 'Complaints', icon: '📋', badgeKey: 'wardenAction' },
+      { path: '/warden/history', label: 'History', icon: '📜' },
+      { path: '/warden/reports', label: 'Reports', icon: '📊' },
+      { path: '/warden/profile', label: 'My Profile', icon: '👤' }
     ],
     ADMIN: [
       { path: '/admin/dashboard', label: 'Dashboard', icon: '🏠' },

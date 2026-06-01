@@ -23,6 +23,10 @@ import KnowledgeBase      from './pages/student/KnowledgeBase';
 import WardenDashboard        from './pages/warden/Dashboard';
 import WardenComplaints       from './pages/warden/Complaints';
 import WardenComplaintDetail  from './pages/warden/ComplaintDetail';
+import WardenHistory          from './pages/warden/History';
+import WardenReports          from './pages/warden/Reports';
+import WardenProfile          from './pages/warden/Profile';
+import WardenNotifications    from './pages/warden/Notifications';
 
 // Admin pages
 import AdminDashboard   from './pages/admin/Dashboard';
@@ -80,6 +84,10 @@ function App() {
               <Route path="/warden/dashboard"          element={<WardenDashboard />}       />
               <Route path="/warden/complaints"         element={<WardenComplaints />}    />
               <Route path="/warden/complaints/:id"     element={<WardenComplaintDetail />} />
+              <Route path="/warden/history"            element={<WardenHistory />}         />
+              <Route path="/warden/reports"            element={<WardenReports />}         />
+              <Route path="/warden/profile"            element={<WardenProfile />}         />
+              <Route path="/warden/notifications"      element={<WardenNotifications />}   />
             </Route>
 
             {/* Admin routes */}

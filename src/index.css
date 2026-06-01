@@ -104,3 +104,44 @@ body {
     height: 36px;
   }
 }
+
+/* Responsive Navbar classes */
+.nav-links-desktop {
+  display: flex !important;
+}
+
+.nav-right-desktop {
+  display: flex !important;
+}
+
+.mobile-menu-toggle {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .nav-links-desktop {
+    display: none !important;
+  }
+
+  .nav-right-desktop {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #64748b;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .mobile-menu-toggle:hover {
+    background-color: #f1f5f9;
+  }
+}
