@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
+import { User, Lock } from 'lucide-react';
 import PortalLayout from '../../components/PortalLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { THEME } from '../../theme';
@@ -72,9 +73,9 @@ const StudentProfile = () => {
     if (/[0-9]/.test(newPassword)) score += 1;
     if (/[^A-Za-z0-9]/.test(newPassword)) score += 1;
 
-    if (score <= 2) return { score, label: 'Weak ⚠️', color: THEME.colors.red500 };
-    if (score <= 4) return { score, label: 'Good 👍', color: THEME.colors.yellow500 };
-    return { score, label: 'Strong 💪', color: THEME.colors.green500 };
+    if (score <= 2) return { score, label: 'Weak', color: THEME.colors.red500 };
+    if (score <= 4) return { score, label: 'Good', color: THEME.colors.yellow500 };
+    return { score, label: 'Strong', color: THEME.colors.green500 };
   };
 
   const passwordStrength = getPasswordStrength();
@@ -268,10 +269,15 @@ const StudentProfile = () => {
                   fontSize: '14px',
                   fontWeight: '700',
                   cursor: 'pointer',
-                  transition: THEME.transition
+                  transition: THEME.transition,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
                 }}
               >
-                👤 Personal & Hostel Info
+                <User size={16} />
+                <span>Personal & Hostel Info</span>
               </button>
               <button
                 onClick={() => setActiveTab('security')}
@@ -285,10 +291,15 @@ const StudentProfile = () => {
                   fontSize: '14px',
                   fontWeight: '700',
                   cursor: 'pointer',
-                  transition: THEME.transition
+                  transition: THEME.transition,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
                 }}
               >
-                🔒 Security & Password
+                <Lock size={16} />
+                <span>Security & Password</span>
               </button>
             </div>
 

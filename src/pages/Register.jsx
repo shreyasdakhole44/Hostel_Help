@@ -28,9 +28,9 @@ const Register = () => {
     if (/[0-9]/.test(password)) score += 1;
     if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
-    if (score <= 2) return { score, label: 'Weak ⚠️', color: THEME.colors.red500 };
-    if (score <= 4) return { score, label: 'Good 👍', color: THEME.colors.yellow500 };
-    return { score, label: 'Strong 💪', color: THEME.colors.green500 };
+    if (score <= 2) return { score, label: 'Weak', color: THEME.colors.red500 };
+    if (score <= 4) return { score, label: 'Good', color: THEME.colors.yellow500 };
+    return { score, label: 'Strong', color: THEME.colors.green500 };
   };
 
   const strength = getPasswordStrength();

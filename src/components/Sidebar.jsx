@@ -3,6 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { THEME } from '../theme';
 import hostelHelpLogo from '../assets/hostel-help-logo.png';
+import { 
+  Home, ClipboardList, PlusCircle, User, BookOpen, 
+  History, BarChart3, Users, Wrench, Tag, LogOut 
+} from 'lucide-react';
 
 const Sidebar = ({ isOpen, isDesktop, toggleSidebar }) => {
   const { user, logout } = useAuth();
@@ -25,26 +29,26 @@ const Sidebar = ({ isOpen, isDesktop, toggleSidebar }) => {
   // Defined navigation lists per role
   const navItems = {
     STUDENT: [
-      { path: '/student/dashboard', label: 'Dashboard', icon: '🏠' },
-      { path: '/student/complaints', label: 'My Complaints', icon: '📋', badgeKey: 'studentPending' },
-      { path: '/student/complaints/new', label: 'Submit Complaint', icon: '➕' },
-      { path: '/student/profile', label: 'My Profile', icon: '👤' },
-      { path: '/student/knowledge', label: 'Knowledge Base', icon: '📚' }
+      { path: '/student/dashboard', label: 'Dashboard', icon: Home },
+      { path: '/student/complaints', label: 'My Complaints', icon: ClipboardList, badgeKey: 'studentPending' },
+      { path: '/student/complaints/new', label: 'Submit Complaint', icon: PlusCircle },
+      { path: '/student/profile', label: 'My Profile', icon: User },
+      { path: '/student/knowledge', label: 'Knowledge Base', icon: BookOpen }
     ],
     WARDEN: [
-      { path: '/warden/dashboard', label: 'Dashboard', icon: '🏠' },
-      { path: '/warden/complaints', label: 'Complaints', icon: '📋', badgeKey: 'wardenAction' },
-      { path: '/warden/history', label: 'History', icon: '📜' },
-      { path: '/warden/reports', label: 'Reports', icon: '📊' },
-      { path: '/warden/profile', label: 'My Profile', icon: '👤' }
+      { path: '/warden/dashboard', label: 'Dashboard', icon: Home },
+      { path: '/warden/complaints', label: 'Complaints', icon: ClipboardList, badgeKey: 'wardenAction' },
+      { path: '/warden/history', label: 'History', icon: History },
+      { path: '/warden/reports', label: 'Reports', icon: BarChart3 },
+      { path: '/warden/profile', label: 'My Profile', icon: User }
     ],
     ADMIN: [
-      { path: '/admin/dashboard', label: 'Dashboard', icon: '🏠' },
-      { path: '/admin/complaints', label: 'All Complaints', icon: '📋', badgeKey: 'adminPending' },
-      { path: '/admin/users/students', label: 'Students', icon: '👥' },
-      { path: '/admin/users/wardens', label: 'Wardens', icon: '👷' },
-      { path: '/admin/categories', label: 'Categories', icon: '🏷️' },
-      { path: '/admin/analytics', label: 'Analytics', icon: '📊' }
+      { path: '/admin/dashboard', label: 'Dashboard', icon: Home },
+      { path: '/admin/complaints', label: 'All Complaints', icon: ClipboardList, badgeKey: 'adminPending' },
+      { path: '/admin/users/students', label: 'Students', icon: Users },
+      { path: '/admin/users/wardens', label: 'Wardens', icon: Wrench },
+      { path: '/admin/categories', label: 'Categories', icon: Tag },
+      { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 }
     ]
   };
 
@@ -182,7 +186,9 @@ const Sidebar = ({ isOpen, isDesktop, toggleSidebar }) => {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '16px', width: '20px' }}>{item.icon}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', width: '20px', color: isActive ? THEME.colors.purple600 : THEME.colors.gray500 }}>
+                      {React.createElement(item.icon, { size: 18 })}
+                    </span>
                     <span style={{ fontSize: '14px' }}>{item.label}</span>
                   </div>
                   {badgeCount > 0 && (
@@ -295,7 +301,9 @@ const Sidebar = ({ isOpen, isDesktop, toggleSidebar }) => {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <span style={{ fontSize: '16px', width: '20px' }}>🚪</span>
+            <span style={{ display: 'flex', alignItems: 'center', width: '20px', color: THEME.colors.red500 }}>
+              <LogOut size={18} />
+            </span>
             <span>Logout</span>
           </button>
         </div>

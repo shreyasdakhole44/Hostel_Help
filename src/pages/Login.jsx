@@ -6,6 +6,7 @@ import { authService } from '../services/authService';
 import { THEME } from '../theme';
 import LoadingSpinner from '../components/LoadingSpinner';
 import hostelHelpLogo from '../assets/hostel-help-logo.png';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ const Login = () => {
         {/* Header */}
         <div style={{ marginBottom: '28px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '8px' }}>
-            Welcome back 👋
+            Welcome Back
           </h2>
           <p style={{ color: THEME.colors.gray500, fontSize: '14px' }}>
             Enter your credentials to access your dashboard.
@@ -110,7 +111,9 @@ const Login = () => {
               Email Address
             </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500 }}>✉️</span>
+              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500, display: 'flex', alignItems: 'center' }}>
+                <Mail size={18} />
+              </span>
               <input
                 type="email"
                 value={email}
@@ -145,7 +148,9 @@ const Login = () => {
               Password
             </label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500 }}>🔒</span>
+              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500, display: 'flex', alignItems: 'center' }}>
+                <Lock size={18} />
+              </span>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
@@ -181,10 +186,11 @@ const Login = () => {
                   border: 'none',
                   color: THEME.colors.gray500,
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>

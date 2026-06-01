@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { User, Key, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import PortalLayout from '../../components/PortalLayout';
@@ -219,9 +220,9 @@ const WardenProfile = () => {
           {/* Tabs header row */}
           <div style={{ display: 'flex', borderBottom: `1px solid ${THEME.colors.gray100}`, backgroundColor: THEME.colors.gray50 }}>
             {[
-              { key: 'profile', label: '👤 Profile Details' },
-              { key: 'password', label: '🔑 Change Password' },
-              { key: 'notifications', label: '⚙️ Preferences' }
+              { key: 'profile', label: 'Profile Details', icon: User },
+              { key: 'password', label: 'Change Password', icon: Key },
+              { key: 'notifications', label: 'Preferences', icon: Settings }
             ].map(tab => (
               <button
                 key={tab.key}
@@ -235,10 +236,14 @@ const WardenProfile = () => {
                   color: activeTab === tab.key ? THEME.colors.purple600 : THEME.colors.gray500,
                   cursor: 'pointer',
                   borderBottom: `2.5px solid ${activeTab === tab.key ? THEME.colors.purple600 : 'transparent'}`,
-                  transition: THEME.transition
+                  transition: THEME.transition,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                {tab.label}
+                <tab.icon size={16} />
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>

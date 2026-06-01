@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { AlertTriangle, ClipboardList, Clock, Users, Wrench } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import DashboardLayout from '../../components/DashboardLayout';
 import StatCard from '../../components/StatCard';
@@ -97,7 +98,7 @@ const AdminDashboard = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '24px' }}>⚠️</span>
+                <AlertTriangle size={24} style={{ color: '#D97706' }} />
                 <span style={{ fontSize: '14px', color: '#92400E', fontWeight: '600' }}>
                   {overdueCount} {overdueCount === 1 ? 'complaint is' : 'complaints are'} overdue and need immediate attention
                 </span>
@@ -120,13 +121,13 @@ const AdminDashboard = () => {
           {/* Large Stats Row */}
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
             <StatCard
-              icon="📋"
+              icon={ClipboardList}
               label="Total Complaints"
               value={totalComplaints}
             />
             <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
               <StatCard
-                icon="⏳"
+                icon={Clock}
                 label="Pending Review"
                 value={pendingReview}
               />
@@ -150,12 +151,12 @@ const AdminDashboard = () => {
               )}
             </div>
             <StatCard
-              icon="👥"
+              icon={Users}
               label="Total Students"
               value={totalStudents}
             />
             <StatCard
-              icon="👷"
+              icon={Wrench}
               label="Active Wardens"
               value={activeWardens}
             />

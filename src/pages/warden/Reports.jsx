@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar
 } from 'recharts';
+import { Target, Clock, Zap } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -151,7 +152,7 @@ const WardenReports = () => {
           {/* Stat Summary row */}
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <StatCard
-              icon="🎯"
+              icon={Target}
               label="Resolution Rate"
               value={`${resolutionRate}%`}
               percentage={8}
@@ -159,7 +160,7 @@ const WardenReports = () => {
               timeframe="vs last month"
             />
             <StatCard
-              icon="⏱️"
+              icon={Clock}
               label="Avg Resolution Time"
               value={avgResolutionHours > 0 ? `${avgResolutionHours} Hours` : 'N/A'}
               percentage={12}
@@ -167,7 +168,7 @@ const WardenReports = () => {
               timeframe="vs last month"
             />
             <StatCard
-              icon="🚀"
+              icon={Zap}
               label="Resolved This Month"
               value={resolvedThisMonth}
               percentage={15}

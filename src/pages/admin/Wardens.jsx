@@ -6,6 +6,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import Modal from '../../components/Modal';
 import { THEME } from '../../theme';
+import { Search, Plus, UserCheck } from 'lucide-react';
 
 const Wardens = () => {
   const [wardens, setWardens] = useState([]);
@@ -161,12 +162,16 @@ const Wardens = () => {
                 fontSize: '14px',
                 cursor: 'pointer',
                 boxShadow: THEME.shadows.button,
-                transition: THEME.transition
+                transition: THEME.transition,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.95)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
             >
-              Create Warden +
+              <Plus size={16} />
+              Add Warden
             </button>
           </div>
 
@@ -187,7 +192,9 @@ const Wardens = () => {
           >
             {/* Search Input */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500 }}>🔍</span>
+              <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500, display: 'flex', alignItems: 'center' }}>
+                <Search size={18} />
+              </span>
               <input
                 type="text"
                 placeholder="Search wardens..."
@@ -245,7 +252,7 @@ const Wardens = () => {
           {/* Wardens List Table */}
           {filteredWardens.length === 0 ? (
             <EmptyState
-              icon="👷"
+              icon={UserCheck}
               heading="No wardens found"
               subtext={searchQuery ? "We couldn't find any wardens matching your search." : "No warden accounts are registered yet."}
               actionLabel="Add Warden"

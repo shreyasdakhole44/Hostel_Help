@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
 import hostelHelpLogo from '../assets/hostel-help-logo.png';
+import { Bell, User, Key, Settings, LogOut, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -202,7 +203,6 @@ const Navbar = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: '20px',
                 cursor: 'pointer',
                 position: 'relative',
                 padding: '6px',
@@ -215,7 +215,7 @@ const Navbar = () => {
                 backgroundColor: dropdownOpen ? '#f1f5f9' : 'transparent'
               }}
             >
-              🔔
+              <Bell size={20} />
               {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute',
@@ -388,12 +388,15 @@ const Navbar = () => {
                           cursor: 'pointer',
                           transition: 'background 0.2s',
                           fontWeight: '500',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
                         }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        👤 My Profile
+                        <User size={14} /> My Profile
                       </div>
                       <div
                         onClick={() => {
@@ -407,12 +410,15 @@ const Navbar = () => {
                           cursor: 'pointer',
                           transition: 'background 0.2s',
                           fontWeight: '500',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
                         }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        🔑 Change Password
+                        <Key size={14} /> Change Password
                       </div>
                       <div
                         onClick={() => {
@@ -426,12 +432,15 @@ const Navbar = () => {
                           cursor: 'pointer',
                           transition: 'background 0.2s',
                           fontWeight: '500',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
                         }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        ⚙️ Settings
+                        <Settings size={14} /> Settings
                       </div>
                       <div style={{ height: '1px', backgroundColor: '#f1f5f9', margin: '4px 0' }} />
                       <div
@@ -446,12 +455,15 @@ const Navbar = () => {
                           cursor: 'pointer',
                           transition: 'background 0.2s',
                           fontWeight: '600',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
                         }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        🚪 Logout
+                        <LogOut size={14} /> Logout
                       </div>
                     </div>
                   )}
@@ -488,8 +500,9 @@ const Navbar = () => {
         <button
           className="mobile-menu-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {mobileMenuOpen ? '✕' : '☰'}
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
@@ -527,23 +540,23 @@ const Navbar = () => {
                   <Link
                     to="/warden/profile"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={styles.mobileLink}
+                    style={{ ...styles.mobileLink, display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
-                    👤 My Profile
+                    <User size={16} /> My Profile
                   </Link>
                   <Link
                     to="/warden/profile?tab=password"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={styles.mobileLink}
+                    style={{ ...styles.mobileLink, display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
-                    🔑 Change Password
+                    <Key size={16} /> Change Password
                   </Link>
                   <Link
                     to="/warden/profile?tab=settings"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={styles.mobileLink}
+                    style={{ ...styles.mobileLink, display: 'flex', alignItems: 'center', gap: '8px' }}
                   >
-                    ⚙️ Settings
+                    <Settings size={16} /> Settings
                   </Link>
                 </>
               )}
@@ -552,9 +565,9 @@ const Navbar = () => {
                 <Link
                   to="/student/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  style={styles.mobileLink}
+                  style={{ ...styles.mobileLink, display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  👤 My Profile
+                  <User size={16} /> My Profile
                 </Link>
               )}
 
@@ -563,9 +576,9 @@ const Navbar = () => {
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                style={{ ...styles.mobileLogoutBtn, marginTop: '8px' }}
+                style={{ ...styles.mobileLogoutBtn, marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                🚪 Logout
+                <LogOut size={16} /> Logout
               </button>
             </div>
           ) : (

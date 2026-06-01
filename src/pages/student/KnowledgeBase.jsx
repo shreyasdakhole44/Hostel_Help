@@ -1,5 +1,25 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import {
+  Search,
+  HelpCircle,
+  BookOpen,
+  PhoneCall,
+  Clock,
+  VolumeX,
+  Plug,
+  Sparkles,
+  Hammer,
+  Ban,
+  Shield,
+  User,
+  Heart,
+  Zap,
+  Wrench,
+  Copy,
+  ChevronUp,
+  ChevronDown
+} from 'lucide-react';
 import PortalLayout from '../../components/PortalLayout';
 import { THEME } from '../../theme';
 
@@ -48,37 +68,37 @@ const KnowledgeBase = () => {
       id: 1,
       title: 'Curfew & Attendance',
       desc: 'All students must return to the hostel by 10:00 PM daily. Daily attendance must be marked via the biometric readers at the main lobby between 9:00 PM and 10:00 PM.',
-      icon: '⏰'
+      icon: Clock
     },
     {
       id: 2,
       title: 'Quiet Hours',
       desc: 'Quiet hours are observed from 10:00 PM to 6:00 AM. Loud music, shouting, or noisy activities that disturb other residents are strictly prohibited during this time.',
-      icon: '🤫'
+      icon: VolumeX
     },
     {
       id: 3,
       title: 'Unauthorized Appliances',
       desc: 'High-wattage appliances such as room heaters, induction cooktops, water heaters/immersion rods, and air conditioners are not permitted in student rooms due to safety concerns.',
-      icon: '🔌'
+      icon: Plug
     },
     {
       id: 4,
       title: 'Room Upkeep & Hygiene',
       desc: 'Residents are responsible for maintaining cleanliness in their rooms. Trash must be disposed of daily in the corridor trash bins. Cooking inside rooms is strictly prohibited.',
-      icon: '🧹'
+      icon: Sparkles
     },
     {
       id: 5,
       title: 'Property Damage Policies',
       desc: 'Any damage or defacement of hostel property (furniture, walls, windows, electrical sockets) will result in a fine equal to the replacement cost plus disciplinary action.',
-      icon: '🪑'
+      icon: Hammer
     },
     {
       id: 6,
       title: 'Anti-Ragging Regulations',
       desc: 'Ragging in any form is a criminal offense and strictly prohibited. Any student found engaging in ragging will be immediately expelled from the hostel and university.',
-      icon: '🚫'
+      icon: Ban
     }
   ];
 
@@ -90,7 +110,7 @@ const KnowledgeBase = () => {
       phone: '+91 98765 43210',
       email: 'chiefwarden@university.edu',
       hours: '9:00 AM - 6:00 PM (On-call for Emergencies)',
-      icon: '👑'
+      icon: Shield
     },
     {
       role: 'Main Security Office (Gate 1)',
@@ -98,7 +118,7 @@ const KnowledgeBase = () => {
       phone: '+91 99999 88888',
       email: 'security.helpdesk@university.edu',
       hours: '24 Hours / 7 Days a week',
-      icon: '🛡️'
+      icon: Shield
     },
     {
       role: 'Newton Hall Warden (Block A)',
@@ -106,7 +126,7 @@ const KnowledgeBase = () => {
       phone: '+91 98765 00001',
       email: 'newton.warden@university.edu',
       hours: '8:00 AM - 5:00 PM',
-      icon: '👷'
+      icon: User
     },
     {
       role: 'Campus Health Clinic & Ambulance',
@@ -114,7 +134,7 @@ const KnowledgeBase = () => {
       phone: '+91 99999 11111',
       email: 'campushealth@university.edu',
       hours: '24 Hours / 7 Days (Ambulance on standby)',
-      icon: '🚑'
+      icon: Heart
     },
     {
       role: 'Electrical Maintenance Emergency',
@@ -122,7 +142,7 @@ const KnowledgeBase = () => {
       phone: '+91 98765 00002',
       email: 'electrical.emerg@university.edu',
       hours: '6:00 AM - 10:00 PM',
-      icon: '⚡'
+      icon: Zap
     },
     {
       role: 'Plumbing & Leakage Helpdesk',
@@ -130,7 +150,7 @@ const KnowledgeBase = () => {
       phone: '+91 98765 00003',
       email: 'plumbing.desk@university.edu',
       hours: '8:00 AM - 8:00 PM',
-      icon: '🔧'
+      icon: Wrench
     }
   ];
 
@@ -181,7 +201,7 @@ const KnowledgeBase = () => {
           {/* Search bar */}
           {activeTab !== 'contacts' && (
             <div style={{ position: 'relative', width: '100%', maxWidth: '480px', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '16px', color: THEME.colors.gray500, fontSize: '16px' }}>🔍</span>
+              <Search size={18} style={{ position: 'absolute', left: '16px', color: THEME.colors.gray400 }} />
               <input
                 type="text"
                 placeholder={`Search ${activeTab === 'faq' ? 'FAQs' : 'hostel rules'}...`}
@@ -232,9 +252,9 @@ const KnowledgeBase = () => {
           }}
         >
           {[
-            { id: 'faq', label: '❓ Frequently Asked Questions', icon: '❓' },
-            { id: 'rules', label: '📜 Hostel Rules & Regulations', icon: '📜' },
-            { id: 'contacts', label: '☎️ Emergency Contacts', icon: '☎' }
+            { id: 'faq', label: 'Frequently Asked Questions', icon: HelpCircle },
+            { id: 'rules', label: 'Hostel Rules & Regulations', icon: BookOpen },
+            { id: 'contacts', label: 'Emergency Contacts', icon: PhoneCall }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -252,7 +272,11 @@ const KnowledgeBase = () => {
                 fontSize: '14px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                transition: THEME.transition
+                transition: THEME.transition,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== tab.id) e.currentTarget.style.color = THEME.colors.gray900;
@@ -261,7 +285,8 @@ const KnowledgeBase = () => {
                 if (activeTab !== tab.id) e.currentTarget.style.color = THEME.colors.gray500;
               }}
             >
-              {tab.label}
+              <tab.icon size={16} />
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -306,8 +331,8 @@ const KnowledgeBase = () => {
                         <span style={{ fontSize: '15px', fontWeight: '700', color: isOpen ? THEME.colors.purple600 : THEME.colors.gray900 }}>
                           {faq.q}
                         </span>
-                        <span style={{ fontSize: '18px', color: isOpen ? THEME.colors.purple600 : THEME.colors.gray500 }}>
-                          {isOpen ? '▲' : '▼'}
+                        <span style={{ display: 'flex', alignItems: 'center', color: isOpen ? THEME.colors.purple600 : THEME.colors.gray500 }}>
+                          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </span>
                       </div>
 
@@ -379,7 +404,7 @@ const KnowledgeBase = () => {
                       e.currentTarget.style.boxShadow = THEME.shadows.card;
                     }}
                   >
-                    <span style={{ fontSize: '32px', lineHeight: 1 }}>{rule.icon}</span>
+                    <rule.icon size={32} style={{ color: THEME.colors.purple600, flexShrink: 0 }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: THEME.colors.gray900 }}>
                         {rule.title}
@@ -427,13 +452,12 @@ const KnowledgeBase = () => {
                         borderRadius: '50%',
                         backgroundColor: THEME.colors.purple50,
                         color: THEME.colors.purple600,
-                        fontSize: '20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
                     >
-                      {contact.icon}
+                      <contact.icon size={20} />
                     </div>
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: '700', color: THEME.colors.purple600, textTransform: 'uppercase' }}>
@@ -458,11 +482,14 @@ const KnowledgeBase = () => {
                             background: 'none',
                             cursor: 'pointer',
                             fontSize: '12px',
-                            padding: '2px'
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: THEME.colors.gray400
                           }}
                           title="Copy phone number"
                         >
-                          📋
+                          <Copy size={14} />
                         </button>
                       </div>
                     </div>
@@ -478,11 +505,14 @@ const KnowledgeBase = () => {
                             background: 'none',
                             cursor: 'pointer',
                             fontSize: '12px',
-                            padding: '2px'
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: THEME.colors.gray400
                           }}
                           title="Copy email"
                         >
-                          📋
+                          <Copy size={14} />
                         </button>
                       </div>
                     </div>

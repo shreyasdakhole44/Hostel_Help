@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { User, AlertTriangle } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import DashboardLayout from '../../components/DashboardLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -335,13 +336,15 @@ const Categories = () => {
                               >
                                 {getWardenInitials(cat.wardenName || cat.warden?.name)}
                               </div>
-                              <span style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
-                                👷 {cat.wardenName || cat.warden?.name}
+                              <span style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <User size={12} style={{ color: THEME.colors.gray500 }} />
+                                <span>{cat.wardenName || cat.warden?.name}</span>
                               </span>
                             </div>
                           ) : (
-                            <span style={{ fontSize: '13px', color: THEME.colors.gray400, fontStyle: 'italic' }}>
-                              ⚠️ Unassigned warden
+                            <span style={{ fontSize: '13px', color: THEME.colors.gray400, fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <AlertTriangle size={14} style={{ color: THEME.colors.yellow500 }} />
+                              <span>Unassigned warden</span>
                             </span>
                           )}
 

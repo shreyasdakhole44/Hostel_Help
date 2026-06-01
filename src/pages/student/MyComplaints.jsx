@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Search, Inbox, Folder, Calendar, User } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -148,7 +149,7 @@ const MyComplaints = () => {
 
             {/* Search Input */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500, fontSize: '14px' }}>🔍</span>
+              <Search size={16} style={{ position: 'absolute', left: '12px', color: THEME.colors.gray400 }} />
               <input
                 type="text"
                 placeholder="Search issues..."
@@ -181,7 +182,7 @@ const MyComplaints = () => {
           {/* Complaints Vertical List */}
           {filteredComplaints.length === 0 ? (
             <EmptyState
-              icon="📭"
+              icon={Inbox}
               heading="No complaints yet"
               subtext={searchQuery ? "We couldn't find any complaints matching your search." : "No reports have been submitted under this filter."}
               actionLabel={!searchQuery ? "Report an Issue" : null}
@@ -232,19 +233,28 @@ const MyComplaints = () => {
                         color: THEME.colors.purple600,
                         padding: '2px 8px',
                         borderRadius: THEME.radius.small,
-                        fontWeight: '600'
+                        fontWeight: '600',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      📁 {comp.categoryName || 'General'}
+                      <Folder size={12} />
+                      <span>{comp.categoryName || 'General'}</span>
                     </span>
-                    <span>📅 {new Date(comp.createdAt).toLocaleDateString()}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Calendar size={12} />
+                      <span>{new Date(comp.createdAt).toLocaleDateString()}</span>
+                    </span>
                     {comp.wardenName ? (
-                      <span style={{ color: THEME.colors.gray700, fontWeight: '500' }}>
-                        👤 Warden: {comp.wardenName}
+                      <span style={{ color: THEME.colors.gray700, fontWeight: '500', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <User size={12} />
+                        <span>Warden: {comp.wardenName}</span>
                       </span>
                     ) : (
-                      <span style={{ color: THEME.colors.gray400, fontStyle: 'italic' }}>
-                        👤 Unassigned
+                      <span style={{ color: THEME.colors.gray400, fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <User size={12} />
+                        <span>Unassigned</span>
                       </span>
                     )}
                   </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { jsPDF } from 'jspdf';
+import { Download, FileText, Search, History } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -221,7 +222,7 @@ const WardenHistory = () => {
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = THEME.colors.gray50}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = THEME.colors.white}
               >
-                📥 Export CSV
+                <Download size={15} /> Export CSV
               </button>
               <button
                 onClick={exportToPDF}
@@ -243,7 +244,7 @@ const WardenHistory = () => {
                 onMouseEnter={e => e.currentTarget.style.filter = 'brightness(0.95)'}
                 onMouseLeave={e => e.currentTarget.style.filter = 'none'}
               >
-                📄 Export PDF
+                <FileText size={15} /> Export PDF
               </button>
             </div>
           </div>
@@ -264,7 +265,7 @@ const WardenHistory = () => {
             {/* Top row: search + status filter */}
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
               <div style={{ flex: 1, minWidth: '240px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500, fontSize: '14px' }}>🔍</span>
+                <Search size={16} style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500 }} />
                 <input
                   type="text"
                   placeholder="Search complaint, student name or ID..."
@@ -398,7 +399,7 @@ const WardenHistory = () => {
           {/* Complaints Table Card */}
           {filteredComplaints.length === 0 ? (
             <EmptyState
-              icon="📋"
+              icon={History}
               heading="No records found"
               subtext="No historical complaints match your current filter parameters."
             />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Download, User, Eye } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import DashboardLayout from '../../components/DashboardLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -251,17 +252,6 @@ const AllComplaints = () => {
     toast.success('CSV report exported successfully.');
   };
 
-  // Helper to suggest correct expert wardens
-  const getCategoryIcon = (name) => {
-    const lower = name.toLowerCase();
-    if (lower.includes('plumb')) return '🚰';
-    if (lower.includes('elect')) return '⚡';
-    if (lower.includes('internet') || lower.includes('wifi') || lower.includes('net')) return '🌐';
-    if (lower.includes('clean') || lower.includes('sweep') || lower.includes('house')) return '🧹';
-    if (lower.includes('carp') || lower.includes('wood') || lower.includes('furn')) return '🔨';
-    return '👷';
-  };
-
   return (
     <DashboardLayout title="All Complaints" breadcrumbs={['Admin', 'Complaints']}>
       {loading ? (
@@ -290,12 +280,15 @@ const AllComplaints = () => {
                 fontWeight: '600',
                 fontSize: '14px',
                 cursor: 'pointer',
-                transition: THEME.transition
+                transition: THEME.transition,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = THEME.colors.purple50; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
-              Export CSV 📤
+              <Download size={16} /> Export CSV
             </button>
           </div>
 
@@ -512,7 +505,14 @@ const AllComplaints = () => {
                           <StatusBadge status={comp.status} />
                         </td>
                         <td style={{ padding: '14px 20px', color: THEME.colors.gray700, fontWeight: '500' }}>
-                          {comp.wardenName ? `👷 ${comp.wardenName}` : <span style={{ color: THEME.colors.gray400, fontStyle: 'italic' }}>Unassigned</span>}
+                          {comp.wardenName ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <User size={12} style={{ color: THEME.colors.gray500 }} />
+                              <span>{comp.wardenName}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: THEME.colors.gray400, fontStyle: 'italic' }}>Unassigned</span>
+                          )}
                         </td>
                         <td style={{ padding: '14px 20px', color: THEME.colors.gray500 }}>
                           {new Date(comp.createdAt).toLocaleDateString()}
@@ -560,11 +560,12 @@ const AllComplaints = () => {
                               padding: '4px',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center'
+                              justifyContent: 'center',
+                              color: THEME.colors.purple600
                             }}
                             title="View details"
                           >
-                            👁️
+                            <Eye size={16} />
                           </button>
                         </td>
                       </tr>

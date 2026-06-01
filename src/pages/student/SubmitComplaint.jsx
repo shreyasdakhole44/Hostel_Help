@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Info } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -76,16 +77,7 @@ const SubmitComplaint = () => {
     }
   };
 
-  // Helper to show custom icons beside category names
-  const getCategoryIcon = (name) => {
-    const lower = name.toLowerCase();
-    if (lower.includes('plumb')) return '🚰';
-    if (lower.includes('elect')) return '⚡';
-    if (lower.includes('internet') || lower.includes('wifi') || lower.includes('net')) return '🌐';
-    if (lower.includes('clean') || lower.includes('sweep') || lower.includes('house')) return '🧹';
-    if (lower.includes('carp') || lower.includes('wood') || lower.includes('furn')) return '🔨';
-    return '📋';
-  };
+
 
   return (
     <PortalLayout title="Submit Complaint" breadcrumbs={['Dashboard', 'Complaints', 'New']}>
@@ -191,7 +183,7 @@ const SubmitComplaint = () => {
                       <option value="">Choose a category...</option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
-                          {getCategoryIcon(cat.name)} {cat.name}
+                          {cat.name}
                         </option>
                       ))}
                     </select>
@@ -352,7 +344,7 @@ const SubmitComplaint = () => {
               fontWeight: '500'
             }}
           >
-            <span>ℹ️</span>
+            <Info size={16} style={{ color: THEME.colors.purple600 }} />
             <span>You will receive an email confirmation once the complaint is submitted and routed.</span>
           </div>
         </div>

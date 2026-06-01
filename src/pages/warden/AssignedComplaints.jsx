@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Inbox } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import StatusBadge from '../../components/StatusBadge';
 import api from '../../services/api';
@@ -76,7 +77,7 @@ const AssignedComplaints = () => {
           <p style={styles.loading}>Loading complaints...</p>
         ) : filtered.length === 0 ? (
           <div style={styles.emptyBox}>
-            <p style={styles.emptyIcon}>📭</p>
+            <Inbox size={48} style={{ color: '#94a3b8', marginBottom: '12px' }} />
             <p style={styles.emptyText}>No assigned complaints found.</p>
           </div>
         ) : (

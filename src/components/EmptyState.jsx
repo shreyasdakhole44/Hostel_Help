@@ -1,7 +1,8 @@
 import React from 'react';
 import { THEME } from '../theme';
+import { Inbox } from 'lucide-react';
 
-const EmptyState = ({ icon = '📭', heading = 'No data available', subtext = 'There is nothing to display here yet.', actionLabel, onAction }) => {
+const EmptyState = ({ icon: Icon = Inbox, heading = 'No data available', subtext = 'There is nothing to display here yet.', actionLabel, onAction }) => {
   return (
     <div
       style={{
@@ -20,7 +21,9 @@ const EmptyState = ({ icon = '📭', heading = 'No data available', subtext = 'T
         fontFamily: THEME.fonts.family
       }}
     >
-      <div style={{ fontSize: '64px', marginBottom: '16px', lineHeight: 1 }}>{icon}</div>
+      <div style={{ color: THEME.colors.purple500, marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon size={48} />
+      </div>
       <h3
         style={{
           fontSize: '18px',

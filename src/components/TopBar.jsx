@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { THEME } from '../theme';
+import { Search, Bell } from 'lucide-react';
 
 const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
   const { user } = useAuth();
@@ -120,11 +121,12 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
               position: 'absolute',
               left: '12px',
               color: THEME.colors.gray500,
-              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
               pointerEvents: 'none'
             }}
           >
-            🔍
+            <Search size={16} />
           </span>
           <input
             type="text"
@@ -157,7 +159,6 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
           style={{
             background: 'none',
             border: 'none',
-            fontSize: '18px',
             color: THEME.colors.gray500,
             cursor: 'pointer',
             position: 'relative',
@@ -177,7 +178,7 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
             e.currentTarget.style.color = THEME.colors.gray500;
           }}
         >
-          🔔
+          <Bell size={18} />
           {/* Red Dot Badge */}
           <span
             style={{

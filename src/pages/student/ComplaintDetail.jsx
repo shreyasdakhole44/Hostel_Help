@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { 
+  ArrowLeft, 
+  Folder, 
+  Calendar, 
+  Tag, 
+  User, 
+  MessageSquare, 
+  Clock, 
+  Star 
+} from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -163,11 +173,11 @@ const StudentComplaintDetail = () => {
   const renderStars = () => {
     const isSubmitted = complaint.rating !== undefined && complaint.rating !== null && complaint.rating > 0;
     return (
-      <div style={{ display: 'flex', gap: '8px', fontSize: '28px' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
         {[1, 2, 3, 4, 5].map((star) => {
           const filled = hoverRating ? star <= hoverRating : star <= rating;
           return (
-            <span
+            <Star
               key={star}
               onClick={() => {
                 if (!isSubmitted) setRating(star);
@@ -178,15 +188,15 @@ const StudentComplaintDetail = () => {
               onMouseLeave={() => {
                 if (!isSubmitted) setHoverRating(0);
               }}
+              size={24}
+              fill={filled ? THEME.colors.yellow500 : 'transparent'}
+              stroke={filled ? THEME.colors.yellow500 : THEME.colors.gray300}
               style={{
                 cursor: isSubmitted ? 'default' : 'pointer',
-                color: filled ? THEME.colors.yellow500 : THEME.colors.gray200,
-                transition: 'transform 0.1s ease, color 0.1s ease',
+                transition: 'transform 0.1s ease',
                 transform: !isSubmitted && hoverRating === star ? 'scale(1.15)' : 'none'
               }}
-            >
-              ★
-            </span>
+            />
           );
         })}
       </div>
@@ -217,7 +227,7 @@ const StudentComplaintDetail = () => {
             onMouseEnter={(e) => { e.target.style.color = THEME.colors.purple700; }}
             onMouseLeave={(e) => { e.target.style.color = THEME.colors.purple600; }}
           >
-            ← My Complaints
+            <ArrowLeft size={16} /> My Complaints
           </button>
         </div>
 
@@ -261,14 +271,24 @@ const StudentComplaintDetail = () => {
                 flexWrap: 'wrap',
                 fontSize: '13px',
                 color: THEME.colors.gray500,
-                fontWeight: '500'
+                fontWeight: '500',
+                alignItems: 'center'
               }}
             >
-              <span>📁 Category: <strong style={{ color: THEME.colors.gray700 }}>{complaint.categoryName || 'General'}</strong></span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Folder size={14} style={{ color: THEME.colors.gray400 }} />
+                <span>Category: <strong style={{ color: THEME.colors.gray700 }}>{complaint.categoryName || 'General'}</strong></span>
+              </span>
               <span>•</span>
-              <span>📅 Date: <strong style={{ color: THEME.colors.gray700 }}>{new Date(complaint.createdAt).toLocaleDateString()}</strong></span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Calendar size={14} style={{ color: THEME.colors.gray400 }} />
+                <span>Date: <strong style={{ color: THEME.colors.gray700 }}>{new Date(complaint.createdAt).toLocaleDateString()}</strong></span>
+              </span>
               <span>•</span>
-              <span>🏷️ ID: <strong style={{ color: THEME.colors.gray700 }}>#TICKET-{complaint.id}</strong></span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Tag size={14} style={{ color: THEME.colors.gray400 }} />
+                <span>ID: <strong style={{ color: THEME.colors.gray700 }}>#TICKET-{complaint.id}</strong></span>
+              </span>
             </div>
 
             {/* Divider */}
@@ -307,7 +327,7 @@ const StudentComplaintDetail = () => {
                 }}
               >
                 <div style={{ fontSize: '13px', fontWeight: '700', color: THEME.colors.purple900, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>👷</span> Warden's Remark ({complaint.wardenName || 'Warden'})
+                  <User size={14} style={{ color: THEME.colors.purple600 }} /> Warden's Remark ({complaint.wardenName || 'Warden'})
                 </div>
                 <p style={{ fontSize: '14px', color: THEME.colors.purple900, margin: 0, lineHeight: '1.5' }}>
                   {complaint.wardenRemark}
@@ -688,8 +708,9 @@ const StudentComplaintDetail = () => {
                   </div>
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', color: THEME.colors.gray500, fontSize: '13px', padding: '10px 0' }}>
-                  <span>⏳</span> No warden has been assigned yet. Admin will assign this shortly.
+                <div style={{ textAlign: 'center', color: THEME.colors.gray500, fontSize: '13px', padding: '10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Clock size={16} style={{ color: THEME.colors.gray400 }} />
+                  <span>No warden has been assigned yet. Admin will assign this shortly.</span>
                 </div>
               )}
             </div>

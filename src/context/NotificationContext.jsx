@@ -27,6 +27,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log('NotificationProvider useEffect triggered. User status:', user ? `Logged in as ${user.name}` : 'Logged out');
     if (user) {
       fetchNotifications();
       connectWebSocket();
@@ -37,14 +38,19 @@ export const NotificationProvider = ({ children }) => {
     }
 
     return () => {
+      console.log('NotificationProvider useEffect cleanup running.');
       disconnectWebSocket();
     };
   }, [user]);
 
   const connectWebSocket = () => {
-    if (stompClientRef.current) return;
+    if (stompClientRef.current) {
+      console.log('connectWebSocket called, but connection already exists.');
+      return;
+    }
 
     const token = user.token;
+    console.log('Attempting STOMP WebSocket connection to ws://localhost:8080/ws/websocket');
     const client = new Client({
       brokerURL: 'ws://localhost:8080/ws/websocket',
       connectHeaders: {
@@ -54,7 +60,7 @@ export const NotificationProvider = ({ children }) => {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: (frame) => {
-        console.log('STOMP connected', frame);
+        console.log('STOMP connected successfully!', frame);
         // Subscribe to user-specific queue
         client.subscribe('/user/queue/notifications', (message) => {
           if (message.body) {
@@ -73,10 +79,10 @@ export const NotificationProvider = ({ children }) => {
         });
       },
       onStompError: (frame) => {
-        console.error('STOMP broker error', frame.headers['message']);
+        console.error('STOMP broker error:', frame.headers['message']);
       },
-      onWebSocketClose: () => {
-        console.log('STOMP connection closed');
+      onWebSocketClose: (evt) => {
+        console.log('STOMP onWebSocketClose callback triggered.', evt);
       }
     });
 
@@ -85,10 +91,11 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const disconnectWebSocket = () => {
+    console.log('disconnectWebSocket() invoked. Client ref exists:', stompClientRef.current !== null);
     if (stompClientRef.current) {
       stompClientRef.current.deactivate();
       stompClientRef.current = null;
-      console.log('STOMP disconnected');
+      console.log('STOMP client deactivated (disconnect completed).');
     }
   };
 

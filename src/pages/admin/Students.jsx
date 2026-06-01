@@ -5,6 +5,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import { THEME } from '../../theme';
+import { Search, Users } from 'lucide-react';
 
 const Students = () => {
   const [students, setStudents] = useState([]);
@@ -114,7 +115,9 @@ const Students = () => {
           >
             {/* Search */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500 }}>🔍</span>
+              <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500, display: 'flex', alignItems: 'center' }}>
+                <Search size={18} />
+              </span>
               <input
                 type="text"
                 placeholder="Search by name, email, room..."
@@ -172,7 +175,7 @@ const Students = () => {
           {/* Students Table */}
           {filteredStudents.length === 0 ? (
             <EmptyState
-              icon="👥"
+              icon={Users}
               heading="No students found"
               subtext={searchQuery ? "We couldn't find any students matching your search criteria." : "No student accounts are currently registered."}
             />

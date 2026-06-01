@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { THEME } from '../theme';
 import StatusBadge from '../components/StatusBadge';
 import hostelHelpLogo from '../assets/hostel-help-logo.png';
+import { 
+  FileText, 
+  BarChart2, 
+  UserCheck, 
+  Bell, 
+  ClipboardList, 
+  Star, 
+  GraduationCap, 
+  Zap, 
+  ArrowRight 
+} from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -22,12 +33,12 @@ const Landing = () => {
   }, []);
 
   const featureList = [
-    { emoji: '📝', title: 'Submit Complaints', desc: 'Log complaints instantly, choose categories, and get immediate tracking numbers.' },
-    { emoji: '📊', title: 'Real-time Tracking', desc: 'Watch your complaint go from Pending to In Progress to Resolved in real-time.' },
-    { emoji: '👷', title: 'Smart Assignment', desc: 'Auto-route complaints directly to the warden assigned to that specific category.' },
-    { emoji: '🔔', title: 'Email Alerts', desc: 'Receive instant notifications when wardens accept or resolve your complaints.' },
-    { emoji: '📋', title: 'Admin Control', desc: 'Full-featured back-office admin dashboard for categories, wardens, and metrics.' },
-    { emoji: '⭐', title: 'Feedback System', desc: 'Students can review and rate resolutions to ensure quality standards.' }
+    { icon: FileText, title: 'Submit Complaints', desc: 'Log complaints instantly, choose categories, and get immediate tracking numbers.' },
+    { icon: BarChart2, title: 'Real-time Tracking', desc: 'Watch your complaint go from Pending to In Progress to Resolved in real-time.' },
+    { icon: UserCheck, title: 'Smart Assignment', desc: 'Auto-route complaints directly to the warden assigned to that specific category.' },
+    { icon: Bell, title: 'Email Alerts', desc: 'Receive instant notifications when wardens accept or resolve your complaints.' },
+    { icon: ClipboardList, title: 'Admin Control', desc: 'Full-featured back-office admin dashboard for categories, wardens, and metrics.' },
+    { icon: Star, title: 'Feedback System', desc: 'Students can review and rate resolutions to ensure quality standards.' }
   ];
 
   return (
@@ -168,7 +179,9 @@ const Landing = () => {
           {/* Badge */}
           <span
             style={{
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
               backgroundColor: THEME.colors.purple100,
               color: THEME.colors.purple700,
               padding: '6px 16px',
@@ -178,7 +191,8 @@ const Landing = () => {
               marginBottom: '24px'
             }}
           >
-            🎓 Built for Modern Hostels
+            <GraduationCap size={16} />
+            Built for Modern Hostels
           </span>
 
           <h1
@@ -220,7 +234,10 @@ const Landing = () => {
                 fontWeight: '600',
                 cursor: 'pointer',
                 boxShadow: THEME.shadows.button,
-                transition: THEME.transition
+                transition: THEME.transition,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.filter = 'brightness(0.95)';
@@ -231,7 +248,8 @@ const Landing = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Start for Free →
+              <span>Start for Free</span>
+              <ArrowRight size={18} />
             </button>
             <button
               style={{
@@ -331,7 +349,9 @@ const Landing = () => {
                   <span style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '600' }}>OVERVIEW</span>
                   <div style={{ fontSize: '18px', fontWeight: '800', color: THEME.colors.gray900 }}>Complaints Center</div>
                 </div>
-                <span style={{ fontSize: '20px' }}>⚡</span>
+                <span style={{ color: THEME.colors.purple600, display: 'flex', alignItems: 'center' }}>
+                  <Zap size={20} />
+                </span>
               </div>
 
               {/* Mini Stat Cards */}
@@ -466,11 +486,11 @@ const Landing = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '22px',
-                    marginBottom: '20px'
+                    marginBottom: '20px',
+                    color: THEME.colors.purple600
                   }}
                 >
-                  {feat.emoji}
+                  <feat.icon size={22} />
                 </div>
                 <h3
                   style={{
@@ -554,16 +574,16 @@ const Landing = () => {
                 {idx < 2 && (
                   <div
                     style={{
-                      fontSize: '24px',
-                      color: THEME.colors.purple100,
-                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: THEME.colors.purple200,
                       // Hide connectors on mobile screens
                       ...(window.innerWidth < 768 && {
                         display: 'none'
                       })
                     }}
                   >
-                    ➔
+                    <ArrowRight size={24} />
                   </div>
                 )}
               </React.Fragment>

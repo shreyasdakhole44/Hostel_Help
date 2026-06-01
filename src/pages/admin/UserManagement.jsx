@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Navbar from '../../components/Navbar';
 import api from '../../services/api';
+import { Plus } from 'lucide-react';
 
 const UserManagement = () => {
   const [activeTab, setActiveTab] = useState('STUDENT'); // 'STUDENT' or 'WARDEN'
@@ -94,7 +95,12 @@ const UserManagement = () => {
               onClick={() => setShowAddWarden(!showAddWarden)}
               style={styles.addWardenBtn}
             >
-              {showAddWarden ? 'Cancel' : '+ Add New Warden'}
+              {showAddWarden ? 'Cancel' : (
+                <>
+                  <Plus size={16} />
+                  Add Warden
+                </>
+              )}
             </button>
           )}
         </div>
@@ -315,7 +321,7 @@ const styles = {
   content: { maxWidth: '1150px', margin: '0 auto', padding: '32px 24px' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
   title: { fontSize: '22px', fontWeight: '700', color: '#1e293b', margin: 0 },
-  addWardenBtn: { backgroundColor: '#4f46e5', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.15)' },
+  addWardenBtn: { backgroundColor: '#4f46e5', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.15)', display: 'flex', alignItems: 'center', gap: '6px' },
   addPanel: { backgroundColor: '#fff', borderRadius: '12px', padding: '28px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '28px' },
   panelTitle: { fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '18px' },
   form: { display: 'flex', flexDirection: 'column', gap: '16px' },

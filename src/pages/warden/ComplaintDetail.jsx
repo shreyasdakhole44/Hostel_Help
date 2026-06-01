@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { 
+  ArrowLeft, 
+  User, 
+  Home, 
+  Folder, 
+  AlertTriangle, 
+  Check, 
+  Wrench, 
+  CheckCircle, 
+  XCircle, 
+  Lock 
+} from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -217,7 +229,7 @@ const WardenComplaintDetail = () => {
             onMouseEnter={e => e.currentTarget.style.color = THEME.colors.purple700}
             onMouseLeave={e => e.currentTarget.style.color = THEME.colors.purple600}
           >
-            ← Back to Dashboard
+            <ArrowLeft size={16} /> Back to Dashboard
           </button>
         </div>
 
@@ -268,7 +280,7 @@ const WardenComplaintDetail = () => {
                   zIndex: 2,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                 }}>
-                  {step.done ? '✓' : idx + 1}
+                  {step.done ? <Check size={16} strokeWidth={3} /> : idx + 1}
                 </div>
 
                 <span style={{ fontSize: '13.5px', fontWeight: '700', color: step.done ? THEME.colors.gray900 : THEME.colors.gray500 }}>{step.name}</span>
@@ -327,19 +339,31 @@ const WardenComplaintDetail = () => {
               >
                 <div>
                   <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Student Details</div>
-                  <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>👤 {complaint.studentName || 'Student'}</div>
+                  <div style={{ fontWeight: '600', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <User size={16} style={{ color: THEME.colors.gray400 }} />
+                    <span>{complaint.studentName || 'Student'}</span>
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Room Number</div>
-                  <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>🏠 {complaint.roomNumber || '—'}</div>
+                  <div style={{ fontWeight: '600', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Home size={16} style={{ color: THEME.colors.gray400 }} />
+                    <span>{complaint.roomNumber || '—'}</span>
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Category Name</div>
-                  <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>📁 {complaint.categoryName || 'General'}</div>
+                  <div style={{ fontWeight: '600', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Folder size={16} style={{ color: THEME.colors.gray400 }} />
+                    <span>{complaint.categoryName || 'General'}</span>
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Priority Level</div>
-                  <div style={{ fontWeight: '700', color: priorityColor }}>⚡ {priority}</div>
+                  <div style={{ fontWeight: '700', color: priorityColor, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertTriangle size={16} style={{ color: priorityColor }} />
+                    <span>{priority}</span>
+                  </div>
                 </div>
               </div>
 
@@ -492,8 +516,9 @@ const WardenComplaintDetail = () => {
                           style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
                         />
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
-                            🔧 Accept & Start Repair
+                          <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Wrench size={16} style={{ color: THEME.colors.purple600 }} />
+                            <span>Accept & Start Repair</span>
                           </div>
                           <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
                             Move ticket status to "In Progress".
@@ -527,8 +552,9 @@ const WardenComplaintDetail = () => {
                             style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
                           />
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
-                              ✅ Mark as Resolved
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <CheckCircle size={16} style={{ color: THEME.colors.green500 }} />
+                              <span>Mark as Resolved</span>
                             </div>
                             <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
                               Successfully solved the reported problem.
@@ -558,8 +584,9 @@ const WardenComplaintDetail = () => {
                             style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
                           />
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
-                              ❌ Reject Ticket
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <XCircle size={16} style={{ color: THEME.colors.red500 }} />
+                              <span>Reject Ticket</span>
                             </div>
                             <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
                               Reject complaint (e.g. duplicate or invalid).
@@ -644,8 +671,9 @@ const WardenComplaintDetail = () => {
 
                 </form>
               ) : (
-                <div style={{ textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${THEME.colors.gray100}`, color: THEME.colors.gray500, fontSize: '14px' }}>
-                  <span>🔒</span> This complaint has been finalized ({complaint.status.replace('_', ' ')}). No further actions are needed.
+                <div style={{ textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${THEME.colors.gray100}`, color: THEME.colors.gray500, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Lock size={16} style={{ color: THEME.colors.gray400 }} />
+                  <span>This complaint has been finalized ({complaint.status.replace('_', ' ')}). No further actions are needed.</span>
                 </div>
               )}
             </div>
@@ -680,7 +708,9 @@ const WardenComplaintDetail = () => {
             border: `1.5px solid ${THEME.colors.gray200}`,
             animation: 'scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
           }}>
-            <div style={{ fontSize: '32px', marginBottom: '16px', textAlign: 'center' }}>⚠️</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <AlertTriangle size={48} style={{ color: THEME.colors.yellow500 }} />
+            </div>
             <h4 style={{ fontSize: '18px', fontWeight: '800', color: THEME.colors.gray900, textAlign: 'center', margin: '0 0 12px 0' }}>
               Confirm Status Transition
             </h4>

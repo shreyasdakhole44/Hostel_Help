@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { useNotifications } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { 
+  AlertTriangle, 
+  ClipboardList, 
+  CheckCircle, 
+  Megaphone, 
+  Bell, 
+  BellOff, 
+  Calendar 
+} from 'lucide-react';
 import PortalLayout from '../../components/PortalLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -19,13 +28,21 @@ const WardenNotifications = () => {
     return true;
   });
 
-  const getAlertIcon = (message = '') => {
+  const getAlertIcon = (message = '', color) => {
     const text = message.toLowerCase();
-    if (text.includes('urgent') || text.includes('emergency') || text.includes('high priority')) return '🚨';
-    if (text.includes('assigned') || text.includes('category')) return '📋';
-    if (text.includes('resolved') || text.includes('closed')) return '✅';
-    if (text.includes('announcement') || text.includes('admin')) return '📢';
-    return '🔔';
+    if (text.includes('urgent') || text.includes('emergency') || text.includes('high priority')) {
+      return <AlertTriangle size={18} style={{ color }} />;
+    }
+    if (text.includes('assigned') || text.includes('category')) {
+      return <ClipboardList size={18} style={{ color }} />;
+    }
+    if (text.includes('resolved') || text.includes('closed')) {
+      return <CheckCircle size={18} style={{ color }} />;
+    }
+    if (text.includes('announcement') || text.includes('admin')) {
+      return <Megaphone size={18} style={{ color }} />;
+    }
+    return <Bell size={18} style={{ color }} />;
   };
 
   const getAlertColor = (message = '') => {
@@ -103,15 +120,15 @@ const WardenNotifications = () => {
         {/* Notifications List */}
         {filteredNotifications.length === 0 ? (
           <EmptyState
-            icon="🎉"
+            icon={BellOff}
             heading="All caught up!"
             subtext={filter === 'UNREAD' ? "No unread alerts in your inbox." : "No notifications match your current filter."}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filteredNotifications.map((n) => {
-              const icon = getAlertIcon(n.message);
               const color = getAlertColor(n.message);
+              const icon = getAlertIcon(n.message, n.read ? THEME.colors.gray400 : color);
               
               return (
                 <div
@@ -156,7 +173,6 @@ const WardenNotifications = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '18px',
                       flexShrink: 0
                     }}>
                       {icon}
@@ -172,8 +188,9 @@ const WardenNotifications = () => {
                       }}>
                         {n.message}
                       </p>
-                      <span style={{ fontSize: '12px', color: THEME.colors.gray500, display: 'inline-block', marginTop: '4px' }}>
-                        📅 {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <span style={{ fontSize: '12px', color: THEME.colors.gray500, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                        <Calendar size={12} style={{ color: THEME.colors.gray400 }} />
+                        <span>{new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </span>
                     </div>
                   </div>

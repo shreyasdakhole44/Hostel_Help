@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { ClipboardList, Clock, Wrench, CheckCircle, Inbox } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
@@ -57,7 +58,7 @@ const StudentDashboard = () => {
           {/* Top greeting */}
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, margin: 0 }}>
-              Good morning, {user?.name || 'Student'}! 👋
+              Welcome back, {user?.name || 'Student'}
             </h2>
             <p style={{ fontSize: '14px', color: THEME.colors.gray500, margin: '4px 0 0 0', fontWeight: '500' }}>
               {formattedDate}
@@ -67,7 +68,7 @@ const StudentDashboard = () => {
           {/* Stats Row */}
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <StatCard
-              icon="📋"
+              icon={ClipboardList}
               label="Total Complaints"
               value={total}
               percentage={12}
@@ -75,7 +76,7 @@ const StudentDashboard = () => {
               timeframe="vs last month"
             />
             <StatCard
-              icon="⏳"
+              icon={Clock}
               label="Pending"
               value={pending}
               percentage={4}
@@ -83,7 +84,7 @@ const StudentDashboard = () => {
               timeframe="vs last month"
             />
             <StatCard
-              icon="🔧"
+              icon={Wrench}
               label="In Progress"
               value={inProgress}
               percentage={8}
@@ -91,7 +92,7 @@ const StudentDashboard = () => {
               timeframe="vs last month"
             />
             <StatCard
-              icon="✅"
+              icon={CheckCircle}
               label="Resolved"
               value={resolved}
               percentage={15}
@@ -148,9 +149,9 @@ const StudentDashboard = () => {
               </div>
 
               {complaints.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: THEME.colors.gray500 }}>
-                  <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🎉</span>
-                  No complaints reported yet.
+                <div style={{ textAlign: 'center', padding: '40px 0', color: THEME.colors.gray500, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <Inbox size={32} style={{ color: THEME.colors.gray400 }} />
+                  <span>No complaints reported yet.</span>
                 </div>
               ) : (
                 <div style={{ overflowX: 'auto' }}>

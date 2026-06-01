@@ -44,7 +44,11 @@ const StatCard = ({ icon, label, value, trend, percentage, trendUp = true, timef
             color: label.includes('Total') || label.includes('All') ? THEME.colors.white : THEME.colors.purple600
           }}
         >
-          {icon}
+          {typeof icon === 'function' || (typeof icon === 'object' && icon !== null) ? (
+            React.createElement(icon, { size: 20 })
+          ) : (
+            icon
+          )}
         </div>
         <span
           style={{

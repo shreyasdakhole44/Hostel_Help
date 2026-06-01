@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Search } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -205,7 +206,7 @@ const WardenComplaints = () => {
               
               {/* Global search */}
               <div style={{ flex: '1.5 1 240px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <span style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500, fontSize: '14px' }}>🔍</span>
+                <Search size={16} style={{ position: 'absolute', left: '12px', color: THEME.colors.gray500 }} />
                 <input
                   type="text"
                   placeholder="Search complaint, student name or ID..."
@@ -361,7 +362,7 @@ const WardenComplaints = () => {
           {/* Table list */}
           {sortedItems.length === 0 ? (
             <EmptyState
-              icon="🔍"
+              icon={Search}
               heading="No assignments found"
               subtext="No complaints matched your active search queries or filter selections."
             />

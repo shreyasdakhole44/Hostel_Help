@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar
 } from 'recharts';
+import { ClipboardList, Clock, Settings, Target, User } from 'lucide-react';
 import { complaintService } from '../../services/complaintService';
 import DashboardLayout from '../../components/DashboardLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -209,22 +210,22 @@ const Analytics = () => {
           {/* Row 1 — 4 Stat Summary Cards */}
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <StatCard
-              icon="📋"
+              icon={ClipboardList}
               label="Total Submissions"
               value={totalCount}
             />
             <StatCard
-              icon="⏳"
+              icon={Clock}
               label="Pending Action"
               value={pendingCount}
             />
             <StatCard
-              icon="⚙️"
+              icon={Settings}
               label="In Progress"
               value={inProgressCount}
             />
             <StatCard
-              icon="🎯"
+              icon={Target}
               label="Resolution Rate"
               value={`${resolutionRate}%`}
             />
@@ -327,7 +328,12 @@ const Analytics = () => {
                   <tbody>
                     {wardenLeaderboard.map((w, idx) => (
                       <tr key={idx} style={{ borderBottom: `1px solid ${THEME.colors.gray100}` }}>
-                        <td style={{ padding: '12px 16px', fontWeight: '600', color: THEME.colors.gray900 }}>👷 {w.name}</td>
+                        <td style={{ padding: '12px 16px', fontWeight: '600', color: THEME.colors.gray900 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <User size={12} style={{ color: THEME.colors.gray500 }} />
+                            <span>{w.name}</span>
+                          </span>
+                        </td>
                         <td style={{ padding: '12px 16px', color: THEME.colors.gray700 }}>{w.assigned}</td>
                         <td style={{ padding: '12px 16px', color: THEME.colors.gray700 }}>{w.resolved}</td>
                         <td style={{ padding: '12px 16px', width: '150px' }}>

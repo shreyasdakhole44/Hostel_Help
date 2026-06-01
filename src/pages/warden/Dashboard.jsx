@@ -8,6 +8,7 @@ import StatCard from '../../components/StatCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { THEME } from '../../theme';
+import { ClipboardList, Clock, Wrench, CheckCircle2, XCircle, ChevronRight, Activity, Calendar } from 'lucide-react';
 
 const WardenDashboard = () => {
   const { user } = useAuth();
@@ -104,7 +105,7 @@ const WardenDashboard = () => {
           desc: `Resolved task: "${c.title}"`,
           time: `${formattedDate} at ${timeStr}`,
           color: THEME.colors.green500,
-          icon: '✅'
+          icon: CheckCircle2
         });
       } else if (c.status === 'REJECTED') {
         logs.push({
@@ -113,7 +114,7 @@ const WardenDashboard = () => {
           desc: `Rejected task: "${c.title}"`,
           time: `${formattedDate} at ${timeStr}`,
           color: THEME.colors.red500,
-          icon: '❌'
+          icon: XCircle
         });
       } else if (c.status === 'IN_PROGRESS') {
         logs.push({
@@ -122,7 +123,7 @@ const WardenDashboard = () => {
           desc: `Status changed to In Progress for "${c.title}"`,
           time: `${formattedDate} at ${timeStr}`,
           color: THEME.colors.blue500,
-          icon: '🔧'
+          icon: Wrench
         });
       } else {
         logs.push({
@@ -131,7 +132,7 @@ const WardenDashboard = () => {
           desc: `Assigned new task: "${c.title}"`,
           time: `${formattedDate} at ${timeStr}`,
           color: THEME.colors.purple600,
-          icon: '📥'
+          icon: ClipboardList
         });
       }
     });
@@ -160,7 +161,7 @@ const WardenDashboard = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, margin: 0 }}>
-                Hello, Warden {user?.name || 'Warden'} 👷
+                Welcome back, Warden {user?.name || 'Warden'}
               </h2>
               <p style={{ fontSize: '14px', color: THEME.colors.gray500, margin: '4px 0 0 0', fontWeight: '500' }}>
                 {formattedDate}
@@ -191,7 +192,7 @@ const WardenDashboard = () => {
           {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             <StatCard
-              icon="📋"
+              icon={ClipboardList}
               label="Assigned Complaints"
               value={totalAssigned}
               percentage={4}
@@ -199,7 +200,7 @@ const WardenDashboard = () => {
               timeframe="vs last week"
             />
             <StatCard
-              icon="⏳"
+              icon={Clock}
               label="Pending Action"
               value={pendingCount}
               percentage={2}
@@ -207,7 +208,7 @@ const WardenDashboard = () => {
               timeframe="vs last week"
             />
             <StatCard
-              icon="⚙️"
+              icon={Wrench}
               label="In Progress"
               value={inProgressCount}
               percentage={12}
@@ -215,7 +216,7 @@ const WardenDashboard = () => {
               timeframe="vs last week"
             />
             <StatCard
-              icon="✅"
+              icon={CheckCircle2}
               label="Resolved"
               value={resolvedCount}
               percentage={16}
@@ -223,7 +224,7 @@ const WardenDashboard = () => {
               timeframe="vs last week"
             />
             <StatCard
-              icon="❌"
+              icon={XCircle}
               label="Rejected"
               value={rejectedCount}
               percentage={1}
@@ -260,7 +261,10 @@ const WardenDashboard = () => {
                   {/* High priority */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
-                      <span style={{ color: THEME.colors.red500 }}>🔴 High Priority</span>
+                      <span style={{ color: THEME.colors.red500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: THEME.colors.red500, display: 'inline-block' }} />
+                        High Priority
+                      </span>
                       <span>{highPriorityCount} Tickets ({Math.round((highPriorityCount / totalAssigned) * 100)}%)</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: THEME.colors.gray100, borderRadius: '4px', overflow: 'hidden' }}>
@@ -271,7 +275,10 @@ const WardenDashboard = () => {
                   {/* Medium priority */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
-                      <span style={{ color: THEME.colors.yellow500 }}>🟡 Medium Priority</span>
+                      <span style={{ color: THEME.colors.yellow500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: THEME.colors.yellow500, display: 'inline-block' }} />
+                        Medium Priority
+                      </span>
                       <span>{mediumPriorityCount} Tickets ({Math.round((mediumPriorityCount / totalAssigned) * 100)}%)</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: THEME.colors.gray100, borderRadius: '4px', overflow: 'hidden' }}>
@@ -282,7 +289,10 @@ const WardenDashboard = () => {
                   {/* Low priority */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
-                      <span style={{ color: THEME.colors.green500 }}>🟢 Low Priority</span>
+                      <span style={{ color: THEME.colors.green500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: THEME.colors.green500, display: 'inline-block' }} />
+                        Low Priority
+                      </span>
                       <span>{lowPriorityCount} Tickets ({Math.round((lowPriorityCount / totalAssigned) * 100)}%)</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: THEME.colors.gray100, borderRadius: '4px', overflow: 'hidden' }}>
@@ -357,10 +367,10 @@ const WardenDashboard = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '10px',
+                        color: log.color,
                         flexShrink: 0
                       }}>
-                        {log.icon}
+                        <log.icon size={10} />
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
