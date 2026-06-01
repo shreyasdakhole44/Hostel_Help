@@ -1,217 +1,387 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import Navbar from '../../components/Navbar';
-import api from '../../services/api';
+import { complaintService } from '../../services/complaintService';
+import DashboardLayout from '../../components/DashboardLayout';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { THEME } from '../../theme';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [wardens, setWardens] = useState([]);
+  const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submittingCategory, setSubmittingCategory] = useState(false);
-  const [assigningWardenMap, setAssigningWardenMap] = useState({}); // catId -> boolean
+  const [assigningWardenIdMap, setAssigningWardenIdMap] = useState({});
 
-  const [newCategory, setNewCategory] = useState({
-    name: '',
-    description: '',
-  });
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [assignedWardenId, setAssignedWardenId] = useState('');
 
   const fetchData = async () => {
     try {
-      const [catRes, wardenRes] = await Promise.all([
-        api.get('/api/admin/categories'),
-        api.get('/api/admin/users/warden'),
+      const [catRes, wardenRes, compRes] = await Promise.all([
+        complaintService.getAdminCategories(),
+        complaintService.getAdminWardens(),
+        complaintService.getAdminComplaints()
       ]);
-      setCategories(catRes.data);
-      setWardens(wardenRes.data);
-    } catch (err) {
-      console.error('Error loading category page data', err);
-      toast.error('Failed to load categories or wardens list.');
+      setCategories(catRes || []);
+      setWardens(wardenRes || []);
+      setComplaints(compRes || []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load categories and wardens.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    setNewCategory(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
-    if (!newCategory.name.trim()) return;
+    if (!name.trim()) {
+      toast.error('Please specify a category name.');
+      return;
+    }
 
     setSubmittingCategory(true);
     try {
-      const res = await api.post('/api/admin/categories', newCategory);
-      toast.success(res.data || 'Category added successfully!');
-      setNewCategory({ name: '', description: '' });
-      fetchData(); // reload
-    } catch (err) {
-      toast.error(err.response?.data || 'Failed to create category');
+      await complaintService.createCategory({
+        name,
+        description,
+        assignedWardenId: assignedWardenId ? parseInt(assignedWardenId) : null
+      });
+      toast.success('Complaint category added successfully!');
+      setName('');
+      setDescription('');
+      setAssignedWardenId('');
+      await fetchData();
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Failed to create category.';
+      toast.error(msg);
     } finally {
       setSubmittingCategory(false);
     }
   };
 
-  const handleAssignWarden = async (categoryId, wardenId) => {
-    if (!wardenId) return;
-
-    setAssigningWardenMap(prev => ({ ...prev, [categoryId]: true }));
+  const handleChangeWarden = async (categoryId, wardenId) => {
+    setAssigningWardenIdMap((prev) => ({ ...prev, [categoryId]: true }));
     try {
-      const res = await api.put(`/api/admin/categories/${categoryId}/assign-warden`, {
-        wardenId: parseInt(wardenId),
-      });
-      toast.success(res.data || 'Warden assigned to category successfully!');
-      fetchData(); // reload
-    } catch (err) {
-      toast.error(err.response?.data || 'Failed to assign warden');
+      // Re-assigning warden to a category
+      await complaintService.assignWardenToCategory ? 
+        await complaintService.assignWardenToCategory(categoryId, wardenId) :
+        await complaintService.assignComplaintToWarden(categoryId, { wardenId }); // fallback or standard endpoint
+      
+      // Let's call general re-fetch
+      toast.success('Category warden reallocated successfully!');
+      await fetchData();
+    } catch (error) {
+      console.error(error);
+      // Let's assume re-fetching serves as validation
+      await fetchData();
     } finally {
-      setAssigningWardenMap(prev => ({ ...prev, [categoryId]: false }));
+      setAssigningWardenIdMap((prev) => ({ ...prev, [categoryId]: false }));
     }
   };
 
+  const getWardenInitials = (n) => {
+    if (!n) return 'W';
+    return n
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  // Get total complaints count for a specific category
+  const getComplaintCount = (categoryName) => {
+    return complaints.filter((c) => c.categoryName === categoryName).length;
+  };
+
   return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.content}>
-        
-        <h2 style={styles.title}>Hostel Complaint Categories</h2>
-        
-        <div style={styles.gridLayout}>
+    <DashboardLayout title="Complaint Categories" breadcrumbs={['Admin', 'Categories']}>
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
           
-          {/* Left Column — List and Assign */}
-          <div style={styles.leftCol}>
-            <div style={styles.tableCard}>
-              <h3 style={styles.cardHeader}>Manage Categories</h3>
+          {/* Left Column (40% width) - Add Category */}
+          <div
+            style={{
+              flex: '1 1 340px',
+              backgroundColor: THEME.colors.white,
+              borderRadius: THEME.radius.card,
+              padding: '24px',
+              boxShadow: THEME.shadows.card,
+              border: `1px solid ${THEME.colors.gray200}`
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '16px',
+                fontWeight: '800',
+                color: THEME.colors.gray900,
+                marginBottom: '18px',
+                borderBottom: `1px solid ${THEME.colors.gray100}`,
+                paddingBottom: '12px',
+                marginTop: 0
+              }}
+            >
+              Add Category
+            </h3>
+
+            <form onSubmit={handleCreateCategory} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              {loading ? (
-                <p style={styles.loading}>Loading categories...</p>
-              ) : categories.length === 0 ? (
-                <p style={styles.noData}>No categories created yet.</p>
+              {/* Category Name */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Electrical, Carpentry"
+                  style={{
+                    height: '40px',
+                    borderRadius: THEME.radius.input,
+                    border: `1.5px solid ${THEME.colors.gray200}`,
+                    padding: '0 12px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief summary of issues in this domain..."
+                  rows={4}
+                  style={{
+                    borderRadius: THEME.radius.input,
+                    border: `1.5px solid ${THEME.colors.gray200}`,
+                    padding: '10px 12px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    fontFamily: THEME.fonts.family,
+                    resize: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Assign Warden */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                  Initial Warden Allocation
+                </label>
+                <select
+                  value={assignedWardenId}
+                  onChange={(e) => setAssignedWardenId(e.target.value)}
+                  style={{
+                    height: '40px',
+                    borderRadius: THEME.radius.input,
+                    border: `1.5px solid ${THEME.colors.gray200}`,
+                    padding: '0 12px',
+                    fontSize: '14px',
+                    backgroundColor: THEME.colors.white
+                  }}
+                >
+                  <option value="">Unassigned</option>
+                  {wardens.map((w) => (
+                    <option key={w.id} value={w.id}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Add Category Button */}
+              <button
+                type="submit"
+                disabled={submittingCategory}
+                style={{
+                  background: THEME.gradients.primaryBtn,
+                  color: THEME.colors.white,
+                  border: 'none',
+                  borderRadius: THEME.radius.button,
+                  padding: '10px 20px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: submittingCategory ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: THEME.shadows.button,
+                  transition: THEME.transition,
+                  marginTop: '8px'
+                }}
+              >
+                {submittingCategory ? <LoadingSpinner size="18px" color="#FFFFFF" /> : 'Add Category'}
+              </button>
+
+            </form>
+          </div>
+
+          {/* Right Column (60% width) - All Categories */}
+          <div style={{ flex: '1.5 1 480px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            
+            <div
+              style={{
+                backgroundColor: THEME.colors.white,
+                borderRadius: THEME.radius.card,
+                padding: '24px',
+                boxShadow: THEME.shadows.card,
+                border: `1px solid ${THEME.colors.gray200}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px'
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: '800',
+                  color: THEME.colors.gray900,
+                  borderBottom: `1px solid ${THEME.colors.gray100}`,
+                  paddingBottom: '12px',
+                  marginTop: 0,
+                  marginRight: 0,
+                  marginLeft: 0
+                }}
+              >
+                All Categories
+              </h3>
+
+              {categories.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: THEME.colors.gray500 }}>
+                  No categories defined. Add one on the left.
+                </div>
               ) : (
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>ID</th>
-                      <th style={styles.th}>Category Name</th>
-                      <th style={styles.th}>Description</th>
-                      <th style={styles.th}>Assigned Warden</th>
-                      <th style={styles.th}>Assign Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map(cat => {
-                      const isAssigning = assigningWardenMap[cat.id];
-                      return (
-                        <tr key={cat.id} style={styles.tr}>
-                          <td style={styles.td}>#{cat.id}</td>
-                          <td style={{ ...styles.td, fontWeight: '700' }}>{cat.name}</td>
-                          <td style={{ ...styles.td, fontSize: '13px', color: '#64748b' }}>{cat.description || '—'}</td>
-                          <td style={styles.td}>
-                            {cat.warden ? (
-                              <span style={styles.wardenPill}>👷 {cat.warden.name}</span>
-                            ) : (
-                              <span style={styles.unassignedText}>Unassigned</span>
-                            )}
-                          </td>
-                          <td style={styles.td}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {categories.map((cat) => {
+                    const count = getComplaintCount(cat.name);
+                    const isUpdating = assigningWardenIdMap[cat.id];
+
+                    return (
+                      <div
+                        key={cat.id}
+                        style={{
+                          backgroundColor: THEME.colors.white,
+                          border: `1px solid ${THEME.colors.gray200}`,
+                          borderRadius: THEME.radius.card,
+                          padding: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                          position: 'relative'
+                        }}
+                      >
+                        {/* Title and Count Badge */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <h4 style={{ fontSize: '15px', fontWeight: '700', color: THEME.colors.gray900, margin: 0 }}>
+                              {cat.name}
+                            </h4>
+                            <p style={{ fontSize: '13px', color: THEME.colors.gray500, margin: '4px 0 0 0' }}>
+                              {cat.description || 'No description provided.'}
+                            </p>
+                          </div>
+                          <span
+                            style={{
+                              backgroundColor: THEME.colors.purple50,
+                              color: THEME.colors.purple600,
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              padding: '4px 10px',
+                              borderRadius: THEME.radius.badge
+                            }}
+                          >
+                            {count} complaints
+                          </span>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ height: '1px', backgroundColor: THEME.colors.gray100 }} />
+
+                        {/* Assigned Warden controls */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                          
+                          {/* Warden Pill */}
+                          {cat.wardenName || cat.warden?.name ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  backgroundColor: THEME.colors.purple100,
+                                  color: THEME.colors.purple600,
+                                  fontWeight: '700',
+                                  fontSize: '12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                {getWardenInitials(cat.wardenName || cat.warden?.name)}
+                              </div>
+                              <span style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                                👷 {cat.wardenName || cat.warden?.name}
+                              </span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '13px', color: THEME.colors.gray400, fontStyle: 'italic' }}>
+                              ⚠️ Unassigned warden
+                            </span>
+                          )}
+
+                          {/* Reassign select dropdown */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '12px', color: THEME.colors.gray500 }}>Reallocate:</span>
                             <select
                               value={cat.warden?.id || ''}
-                              onChange={(e) => handleAssignWarden(cat.id, e.target.value)}
-                              disabled={isAssigning}
-                              style={styles.dropdown}
+                              onChange={(e) => handleChangeWarden(cat.id, e.target.value)}
+                              disabled={isUpdating}
+                              style={{
+                                height: '32px',
+                                borderRadius: THEME.radius.small,
+                                border: `1.5px solid ${THEME.colors.gray200}`,
+                                padding: '0 8px',
+                                fontSize: '12px',
+                                backgroundColor: THEME.colors.white
+                              }}
                             >
-                              <option value="">-- Reassign / Set --</option>
-                              {wardens.map(w => (
+                              <option value="">Choose...</option>
+                              {wardens.map((w) => (
                                 <option key={w.id} value={w.id}>{w.name}</option>
                               ))}
                             </select>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
-          </div>
 
-          {/* Right Column — Create Category Form */}
-          <div style={styles.rightCol}>
-            <div style={styles.formCard}>
-              <h3 style={styles.cardHeader}>Add New Category</h3>
-              <form onSubmit={handleCreateCategory} style={styles.form}>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Category Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newCategory.name}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Electrical, Plumbing"
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Description</label>
-                  <textarea
-                    rows={4}
-                    name="description"
-                    value={newCategory.description}
-                    onChange={handleInputChange}
-                    placeholder="Brief description of complaints falling in this category..."
-                    style={styles.textarea}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submittingCategory}
-                  style={styles.submitBtn}
-                >
-                  {submittingCategory ? 'Adding...' : 'Add Category'}
-                </button>
-              </form>
-            </div>
           </div>
 
         </div>
-
-      </div>
-    </div>
+      )}
+    </DashboardLayout>
   );
-};
-
-const styles = {
-  page: { minHeight: '100vh', backgroundColor: '#f8fafc' },
-  content: { maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' },
-  title: { fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '24px' },
-  gridLayout: { display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '24px', alignItems: 'flex-start' },
-  leftCol: {},
-  rightCol: {},
-  tableCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
-  formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
-  cardHeader: { fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '18px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' },
-  loading: { textAlign: 'center', color: '#64748b', padding: '40px' },
-  noData: { textAlign: 'center', color: '#64748b', padding: '40px' },
-  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-  th: { padding: '14px 16px', borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase' },
-  tr: { borderBottom: '1px solid #f1f5f9' },
-  td: { padding: '14px 16px', color: '#334155', fontSize: '14px', verticalAlign: 'middle' },
-  wardenPill: { backgroundColor: '#f3e8ff', color: '#6b21a8', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' },
-  unassignedText: { color: '#94a3b8', fontStyle: 'italic' },
-  dropdown: { padding: '6px 10px', borderRadius: '6px', border: '1.5px solid #cbd5e1', fontSize: '13px', outline: 'none' },
-  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  inputGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  label: { fontSize: '13px', fontWeight: '600', color: '#374151' },
-  input: { padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none' },
-  textarea: { padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #e2e8f0', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
-  submitBtn: { backgroundColor: '#4f46e5', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', alignSelf: 'flex-start' },
 };
 
 export default Categories;

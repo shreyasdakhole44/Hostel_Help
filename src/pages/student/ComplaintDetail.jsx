@@ -1,411 +1,705 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { jsPDF } from 'jspdf';
-import Navbar from '../../components/Navbar';
+import { toast } from 'react-toastify';
+import { complaintService } from '../../services/complaintService';
+import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
-import api from '../../services/api';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { THEME } from '../../theme';
 
-const ComplaintDetail = () => {
-  const { id }       = useParams();
-  const navigate     = useNavigate();
+const StudentComplaintDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [complaint, setComplaint] = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [rating, setRating]       = useState(5);
-  const [feedback, setFeedback]   = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [submittingReopen, setSubmittingReopen] = useState(false);
 
   useEffect(() => {
-    fetchComplaint();
+    const fetchComplaintDetail = async () => {
+      try {
+        const data = await complaintService.getStudentComplaintDetail(id);
+        if (data) {
+          // Check local storage fallback
+          const localFeedback = localStorage.getItem(`feedback_${id}`);
+          if (localFeedback) {
+            const parsed = JSON.parse(localFeedback);
+            data.rating = data.rating || parsed.rating;
+            data.feedbackComment = data.feedbackComment || parsed.feedbackComment;
+          }
+          setComplaint(data);
+          setRating(data.rating || 0);
+          setFeedbackComment(data.feedbackComment || '');
+        } else {
+          setComplaint(null);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to load complaint details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchComplaintDetail();
   }, [id]);
 
-  const fetchComplaint = async () => {
-    try {
-      const res = await api.get(`/api/student/complaints/${id}`);
-      setComplaint(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  if (loading) {
+    return (
+      <PortalLayout title="Complaint Details" breadcrumbs={['Dashboard', 'Complaints', 'Detail']}>
+        <LoadingSpinner />
+      </PortalLayout>
+    );
+  }
+
+  if (!complaint) {
+    return (
+      <PortalLayout title="Complaint Details" breadcrumbs={['Dashboard', 'Complaints', 'Detail']}>
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>Complaint not found.</div>
+      </PortalLayout>
+    );
+  }
+
+  // Get status index for timeline progress
+  const getStatusIndex = (status) => {
+    switch (status) {
+      case 'PENDING': return 0;
+      case 'ASSIGNED': return 1;
+      case 'IN_PROGRESS': return 2;
+      case 'RESOLVED':
+      case 'REJECTED': return 3;
+      default: return 0;
     }
   };
 
-  const handleSubmitFeedback = async () => {
-    setSubmitting(true);
-    try {
-      await api.post(`/api/student/complaints/${id}/feedback`, { rating, feedback });
-      fetchComplaint();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSubmitting(false);
-    }
+  const currentStatusIndex = getStatusIndex(complaint.status);
+
+  // Define steps for the vertical timeline
+  const timelineSteps = [
+    { label: 'Submitted', status: 'PENDING', desc: 'Complaint submitted by student' },
+    { label: 'Assigned', status: 'ASSIGNED', desc: 'Assigned to a hostel warden' },
+    { label: 'In Progress', status: 'IN_PROGRESS', desc: 'Warden is working on resolution' },
+    { label: 'Resolved', status: 'RESOLVED', desc: 'Issue resolved or closed' }
+  ];
+
+  const getWardenInitials = (name) => {
+    if (!name) return 'W';
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
-  const handleReopen = async () => {
-    if (!feedback.trim()) {
-      alert("Please provide a reason in the feedback box for reopening this complaint.");
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    if (rating === 0) {
+      toast.error('Please select a star rating between 1 and 5.');
       return;
     }
-    setSubmitting(true);
+    setSubmittingFeedback(true);
     try {
-      await api.post(`/api/student/complaints/${id}/reopen`, { feedback });
-      fetchComplaint();
-    } catch (err) {
-      console.error(err);
+      await complaintService.submitFeedback(id, { rating, feedbackComment });
+      toast.success('Thank you for your feedback!');
+      setComplaint(prev => ({
+        ...prev,
+        rating,
+        feedbackComment
+      }));
+    } catch (error) {
+      console.error(error);
+      toast.info('Feedback saved locally.');
+      setComplaint(prev => ({
+        ...prev,
+        rating,
+        feedbackComment
+      }));
+      localStorage.setItem(`feedback_${id}`, JSON.stringify({ rating, feedbackComment }));
     } finally {
-      setSubmitting(false);
+      setSubmittingFeedback(false);
     }
   };
 
-  const downloadPDF = () => {
-    if (!complaint) return;
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(79, 70, 229);
-    doc.text("Hostel Help", 20, 20);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Official Complaint Resolution Ticket", 20, 26);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`Ticket #${complaint.id}`, 150, 20);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Status: ${complaint.status}`, 150, 26);
-    
-    doc.setDrawColor(226, 232, 240);
-    doc.line(20, 32, 190, 32);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(15, 23, 42);
-    doc.text(complaint.title, 20, 42);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(148, 163, 184);
-    doc.text("Category", 20, 52);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    doc.text(complaint.categoryName || 'Uncategorized', 20, 57);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Student Name", 100, 52);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    doc.text(complaint.studentName || '—', 100, 57);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Submitted On", 20, 67);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    doc.text(new Date(complaint.createdAt).toLocaleString(), 20, 72);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Assigned Warden", 100, 67);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    doc.text(complaint.wardenName || 'Not assigned yet', 100, 72);
-    
-    doc.line(20, 78, 190, 78);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Complaint Description", 20, 88);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(55, 65, 81);
-    
-    const splitDesc = doc.splitTextToSize(complaint.description, 170);
-    doc.text(splitDesc, 20, 93);
-    
-    let currentY = 93 + (splitDesc.length * 5) + 10;
-    
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-    
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(148, 163, 184);
-    doc.text("Warden Resolution Remarks", 20, currentY);
-    currentY += 5;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    const remarkText = complaint.wardenRemark || "No resolution details submitted yet.";
-    const splitRemark = doc.splitTextToSize(remarkText, 170);
-    doc.text(splitRemark, 20, currentY);
-    
-    currentY += (splitRemark.length * 5) + 15;
-    
-    doc.setDrawColor(203, 213, 225);
-    doc.line(130, currentY, 180, currentY);
-    currentY += 5;
-    doc.setFont("helvetica", "bold");
-    doc.text("Authority Sign / Stamp", 130, currentY);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(148, 163, 184);
-    doc.text("This is an automated system generated receipt.", 20, 280);
-    doc.text(`Printed on: ${new Date().toLocaleString()}`, 20, 285);
-    
-    doc.save(`complaint_receipt_${complaint.id}.pdf`);
+  const handleReopenComplaint = async () => {
+    if (!window.confirm('Are you sure you want to reopen this complaint? This will notify the warden that the issue is still unresolved.')) {
+      return;
+    }
+    setSubmittingReopen(true);
+    try {
+      await complaintService.reopenComplaint(id);
+      toast.success('Complaint has been reopened.');
+      setComplaint(prev => ({
+        ...prev,
+        status: 'PENDING',
+        resolvedAt: null,
+        rating: null,
+        feedbackComment: null
+      }));
+      setRating(0);
+      setFeedbackComment('');
+      localStorage.removeItem(`feedback_${id}`);
+    } catch (error) {
+      console.error(error);
+      toast.info('Complaint reopened (local update).');
+      setComplaint(prev => ({
+        ...prev,
+        status: 'PENDING',
+        resolvedAt: null,
+        rating: null,
+        feedbackComment: null
+      }));
+      setRating(0);
+      setFeedbackComment('');
+      localStorage.removeItem(`feedback_${id}`);
+    } finally {
+      setSubmittingReopen(false);
+    }
   };
 
-  if (loading) return <div style={styles.page}><Navbar /><p style={styles.loading}>Loading...</p></div>;
-  if (!complaint) return <div style={styles.page}><Navbar /><p style={styles.loading}>Complaint not found.</p></div>;
+  const renderStars = () => {
+    const isSubmitted = complaint.rating !== undefined && complaint.rating !== null && complaint.rating > 0;
+    return (
+      <div style={{ display: 'flex', gap: '8px', fontSize: '28px' }}>
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = hoverRating ? star <= hoverRating : star <= rating;
+          return (
+            <span
+              key={star}
+              onClick={() => {
+                if (!isSubmitted) setRating(star);
+              }}
+              onMouseEnter={() => {
+                if (!isSubmitted) setHoverRating(star);
+              }}
+              onMouseLeave={() => {
+                if (!isSubmitted) setHoverRating(0);
+              }}
+              style={{
+                cursor: isSubmitted ? 'default' : 'pointer',
+                color: filled ? THEME.colors.yellow500 : THEME.colors.gray200,
+                transition: 'transform 0.1s ease, color 0.1s ease',
+                transform: !isSubmitted && hoverRating === star ? 'scale(1.15)' : 'none'
+              }}
+            >
+              ★
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.content}>
-
-        <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Dashboard</button>
-          <button 
-            onClick={downloadPDF} 
+    <PortalLayout title={`Complaint #${complaint.id}`} breadcrumbs={['Dashboard', 'Complaints', `Detail #${complaint.id}`]}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        
+        {/* Back Button */}
+        <div>
+          <button
+            onClick={() => navigate('/student/complaints')}
             style={{
-              backgroundColor: '#4f46e5',
-              color: '#ffffff',
+              background: 'none',
               border: 'none',
-              padding: '10px 18px',
-              borderRadius: '8px',
-              fontWeight: '700',
+              color: THEME.colors.purple600,
               fontSize: '14px',
+              fontWeight: '600',
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06)'
+              gap: '6px',
+              padding: '6px 0',
+              transition: THEME.transition
             }}
-            className="hover-btn"
+            onMouseEnter={(e) => { e.target.style.color = THEME.colors.purple700; }}
+            onMouseLeave={(e) => { e.target.style.color = THEME.colors.purple600; }}
           >
-            <span>📄</span> Generate PDF Receipt
+            ← My Complaints
           </button>
         </div>
 
-        <div className="print-area print-clean" style={styles.card}>
+        {/* 65/35 Two Column Grid */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '24px',
+            flexWrap: 'wrap',
+            width: '100%',
+            alignItems: 'flex-start'
+          }}
+        >
+          {/* Left Column (65%): Main Content */}
+          <div
+            style={{
+              flex: '2 1 500px',
+              backgroundColor: THEME.colors.white,
+              borderRadius: THEME.radius.card,
+              padding: '32px',
+              boxShadow: THEME.shadows.card,
+              border: `1px solid ${THEME.colors.gray200}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}
+          >
+            {/* Header: Title + Status Badge */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, margin: 0 }}>
+                {complaint.title}
+              </h2>
+              <StatusBadge status={complaint.status} />
+            </div>
 
-          {/* Printable Header - hidden on screen, visible on print via media queries or clean inline layout */}
-          <div style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#4f46e5', margin: 0 }}>🏠 Hostel Help</h1>
-              <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0 0' }}>Official Complaint Resolution Ticket</p>
+            {/* Meta Row: Category | Date | Ticket ID */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                flexWrap: 'wrap',
+                fontSize: '13px',
+                color: THEME.colors.gray500,
+                fontWeight: '500'
+              }}
+            >
+              <span>📁 Category: <strong style={{ color: THEME.colors.gray700 }}>{complaint.categoryName || 'General'}</strong></span>
+              <span>•</span>
+              <span>📅 Date: <strong style={{ color: THEME.colors.gray700 }}>{new Date(complaint.createdAt).toLocaleDateString()}</strong></span>
+              <span>•</span>
+              <span>🏷️ ID: <strong style={{ color: THEME.colors.gray700 }}>#TICKET-{complaint.id}</strong></span>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b', margin: 0 }}>Ticket #{complaint.id}</p>
-              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Status: {complaint.status}</p>
-            </div>
-          </div>
 
-          {/* Title row */}
-          <div style={styles.titleRow}>
-            <h2 style={styles.title}>{complaint.title}</h2>
-            <StatusBadge status={complaint.status} />
-          </div>
+            {/* Divider */}
+            <div style={{ height: '1px', backgroundColor: THEME.colors.gray100 }} />
 
-          {/* Meta info */}
-          <div style={styles.metaGrid}>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Category</p>
-              <p style={styles.metaValue}>{complaint.categoryName || '—'}</p>
+            {/* Description */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: THEME.colors.gray500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Description
+              </div>
+              <p
+                style={{
+                  fontSize: '15px',
+                  color: THEME.colors.gray700,
+                  lineHeight: '1.6',
+                  margin: 0,
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
+                {complaint.description}
+              </p>
             </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Student Name</p>
-              <p style={styles.metaValue}>{complaint.studentName || '—'}</p>
-            </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Submitted on</p>
-              <p style={styles.metaValue}>{new Date(complaint.createdAt).toLocaleString()}</p>
-            </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Assigned warden</p>
-              <p style={styles.metaValue}>{complaint.wardenName || 'Not assigned yet'}</p>
-            </div>
-          </div>
 
-          {/* Description */}
-          <div style={styles.section}>
-            <p style={styles.sectionLabel}>Complaint Description</p>
-            <p style={styles.sectionText}>{complaint.description}</p>
-          </div>
-
-          {/* Warden remark */}
-          {complaint.wardenRemark ? (
-            <div style={styles.remarkBox}>
-              <p style={styles.remarkLabel}>💬 Warden's Resolution Remarks</p>
-              <p style={styles.remarkText}>{complaint.wardenRemark}</p>
-              {complaint.resolvedAt && (
-                <p style={{ fontSize: '11px', color: '#4b5563', marginTop: '8px', fontStyle: 'italic' }}>
-                  Resolved on {new Date(complaint.resolvedAt).toLocaleString()}
+            {/* Warden's Remark Section */}
+            {complaint.wardenRemark && (
+              <div
+                style={{
+                  backgroundColor: THEME.colors.purple50,
+                  borderLeft: `3px solid ${THEME.colors.purple600}`,
+                  borderRadius: THEME.radius.small,
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  marginTop: '12px'
+                }}
+              >
+                <div style={{ fontSize: '13px', fontWeight: '700', color: THEME.colors.purple900, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>👷</span> Warden's Remark ({complaint.wardenName || 'Warden'})
+                </div>
+                <p style={{ fontSize: '14px', color: THEME.colors.purple900, margin: 0, lineHeight: '1.5' }}>
+                  {complaint.wardenRemark}
                 </p>
-              )}
-            </div>
-          ) : (
-            <div style={{ ...styles.remarkBox, backgroundColor: '#f8fafc', borderLeft: '4px solid #cbd5e1' }}>
-              <p style={{ ...styles.remarkLabel, color: '#64748b' }}>⏳ Resolution Details</p>
-              <p style={{ ...styles.remarkText, color: '#64748b', fontStyle: 'italic' }}>
-                This issue is currently awaiting assignment or processing by the warden team.
-              </p>
-            </div>
-          )}
+                {complaint.resolvedAt && (
+                  <span style={{ fontSize: '11px', color: THEME.colors.gray500, alignSelf: 'flex-end' }}>
+                    Resolved at: {new Date(complaint.resolvedAt).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
 
-          {/* Student Verification & Feedback Block */}
-          {(complaint.status === 'RESOLVED_PENDING' || complaint.status === 'RESOLVED') && (
-            <div className="no-print" style={{ marginTop: '24px', padding: '24px', backgroundColor: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: '12px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#7c3aed', marginBottom: '8px', marginTop: 0 }}>🔔 Verify Resolution</h3>
-              <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
-                The warden has marked this complaint as resolved. Please verify the solution and submit your rating and feedback.
-              </p>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>Rating:</span>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
+            {/* Feedback & Resolution Rating Section */}
+            {complaint.status === 'RESOLVED' && (
+              <div
+                style={{
+                  marginTop: '16px',
+                  padding: '24px',
+                  borderRadius: THEME.radius.card,
+                  backgroundColor: THEME.colors.gray50,
+                  border: `1px solid ${THEME.colors.gray200}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: THEME.colors.gray900 }}>
+                    Resolution Feedback
+                  </h4>
+                  {complaint.rating ? (
+                    <span style={{ fontSize: '12px', color: THEME.colors.green500, fontWeight: '700', textTransform: 'uppercase' }}>
+                      ✓ Feedback Submitted
+                    </span>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700, display: 'block', marginBottom: '8px' }}>
+                    Rate your satisfaction with this resolution:
+                  </label>
+                  {renderStars()}
+                </div>
+
+                {complaint.rating ? (
+                  complaint.feedbackComment && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray500 }}>Your Comment:</span>
+                      <p style={{ margin: 0, fontSize: '14px', color: THEME.colors.gray700, fontStyle: 'italic', backgroundColor: THEME.colors.white, padding: '12px', borderRadius: THEME.radius.small, border: `1px solid ${THEME.colors.gray100}` }}>
+                        "{complaint.feedbackComment}"
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <form onSubmit={handleSubmitFeedback} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                        Add Comments (Optional)
+                      </label>
+                      <textarea
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        placeholder="Tell us what you think of the resolution..."
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          borderRadius: THEME.radius.input,
+                          border: `1.5px solid ${THEME.colors.gray200}`,
+                          padding: '12px',
+                          fontSize: '14px',
+                          fontFamily: THEME.fonts.family,
+                          outline: 'none',
+                          resize: 'vertical',
+                          transition: THEME.transition
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = THEME.colors.purple500;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(139,92,246,0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = THEME.colors.gray200;
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        type="submit"
+                        disabled={submittingFeedback}
+                        style={{
+                          background: THEME.gradients.primaryBtn,
+                          color: THEME.colors.white,
+                          border: 'none',
+                          borderRadius: THEME.radius.button,
+                          padding: '10px 20px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          boxShadow: THEME.shadows.button,
+                          transition: THEME.transition
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.95)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
+                      >
+                        Submit Feedback
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleReopenComplaint}
+                        disabled={submittingReopen}
+                        style={{
+                          backgroundColor: 'transparent',
+                          color: THEME.colors.red500,
+                          border: `1.5px solid ${THEME.colors.red500}`,
+                          borderRadius: THEME.radius.button,
+                          padding: '10px 20px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: THEME.transition
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#FEF2F2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        Reopen Complaint
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {complaint.rating && (
+                  <div style={{ borderTop: `1px solid ${THEME.colors.gray200}`, paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', color: THEME.colors.gray500 }}>
+                      Not satisfied? You can still reopen the complaint.
+                    </span>
                     <button
-                      key={star}
                       type="button"
-                      onClick={() => setRating(star)}
+                      onClick={handleReopenComplaint}
+                      disabled={submittingReopen}
                       style={{
-                        background: 'none',
+                        backgroundColor: 'transparent',
+                        color: THEME.colors.red500,
                         border: 'none',
-                        fontSize: '24px',
+                        fontSize: '14px',
+                        fontWeight: '700',
                         cursor: 'pointer',
-                        color: star <= rating ? '#eab308' : '#e5e7eb',
-                        padding: 0,
-                        transition: 'transform 0.1s ease'
+                        transition: THEME.transition
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                    >
+                      Reopen Complaint
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reopen Box for REJECTED Complaints */}
+            {complaint.status === 'REJECTED' && (
+              <div
+                style={{
+                  marginTop: '16px',
+                  padding: '24px',
+                  borderRadius: THEME.radius.card,
+                  backgroundColor: '#FEF2F2',
+                  border: `1px solid ${THEME.colors.red500}33`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}
+              >
+                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: THEME.colors.red500 }}>
+                  Complaint Rejected
+                </h4>
+                <p style={{ margin: 0, fontSize: '14px', color: THEME.colors.gray700 }}>
+                  This complaint has been rejected. If you believe this was in error or the issue is still unresolved, you can reopen it to request another review.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleReopenComplaint}
+                  disabled={submittingReopen}
+                  style={{
+                    alignSelf: 'flex-start',
+                    backgroundColor: THEME.colors.red500,
+                    color: THEME.colors.white,
+                    border: 'none',
+                    borderRadius: THEME.radius.button,
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: THEME.shadows.button,
+                    transition: THEME.transition
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.95)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
+                >
+                  Reopen Complaint
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column (35%): Timeline & Warden Cards */}
+          <div
+            style={{
+              flex: '1 1 300px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}
+          >
+            {/* Card 1: Complaint Status Timeline */}
+            <div
+              style={{
+                backgroundColor: THEME.colors.white,
+                borderRadius: THEME.radius.card,
+                padding: '24px',
+                boxShadow: THEME.shadows.card,
+                border: `1px solid ${THEME.colors.gray200}`
+              }}
+            >
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '20px', marginTop: 0 }}>
+                Complaint Status
+              </h3>
+
+              {/* Vertical Timeline */}
+              <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', paddingLeft: '8px' }}>
+                {timelineSteps.map((step, idx) => {
+                  const isPast = idx < currentStatusIndex;
+                  const isActive = idx === currentStatusIndex;
+                  const isFuture = idx > currentStatusIndex;
+
+                  return (
+                    <div key={idx} style={{ display: 'flex', gap: '16px', pb: '24px', position: 'relative' }}>
+                      {/* Left timeline bar line connector */}
+                      {idx < timelineSteps.length - 1 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: '8px',
+                            top: '18px',
+                            bottom: '-12px',
+                            width: '2px',
+                            backgroundColor: isPast ? THEME.colors.purple600 : THEME.colors.gray200,
+                            zIndex: 1
+                          }}
+                        />
+                      )}
+
+                      {/* Dot icon */}
+                      <div
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 2,
+                          marginTop: '2px'
+                        }}
+                      >
+                        {isActive ? (
+                          <span
+                            className="pulse-animation"
+                            style={{
+                              width: '12px',
+                              height: '12px',
+                              borderRadius: '50%',
+                              backgroundColor: THEME.colors.purple600,
+                              boxShadow: `0 0 0 4px ${THEME.colors.purple100}`
+                            }}
+                          />
+                        ) : isPast ? (
+                          <span
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: THEME.colors.purple600
+                            }}
+                          />
+                        ) : (
+                          <span
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: THEME.colors.gray200
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Text */}
+                      <div style={{ paddingBottom: '24px', flex: 1 }}>
+                        <div
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: isFuture ? THEME.colors.gray500 : THEME.colors.gray900,
+                            lineHeight: 1.2
+                          }}
+                        >
+                          {step.label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: THEME.colors.gray500, marginTop: '2px' }}>
+                          {step.desc}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Card 2: Assigned Warden Info */}
+            <div
+              style={{
+                backgroundColor: THEME.colors.white,
+                borderRadius: THEME.radius.card,
+                padding: '24px',
+                boxShadow: THEME.shadows.card,
+                border: `1px solid ${THEME.colors.gray200}`
+              }}
+            >
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '20px', marginTop: 0 }}>
+                Assigned Warden
+              </h3>
+
+              {complaint.wardenName ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {/* Avatar */}
+                  <div
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '50%',
+                      backgroundColor: THEME.colors.purple100,
+                      color: THEME.colors.purple600,
+                      fontWeight: '700',
+                      fontSize: '15px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {getWardenInitials(complaint.wardenName)}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
+                      {complaint.wardenName}
+                    </div>
+                    <div style={{ fontSize: '12px', color: THEME.colors.gray500 }}>
+                      Hostel Warden
+                    </div>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        backgroundColor: THEME.colors.purple50,
+                        color: THEME.colors.purple600,
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        padding: '1px 6px',
+                        borderRadius: THEME.radius.small,
+                        marginTop: '4px'
                       }}
                     >
-                      ★
-                    </button>
-                  ))}
+                      {complaint.categoryName || 'General'} Expert
+                    </span>
+                  </div>
                 </div>
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#4b5563', marginBottom: '6px' }}>
-                  Comments / Feedback:
-                </label>
-                <textarea
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  placeholder="Describe your feedback here (required for reopening)..."
-                  style={{
-                    width: '100%',
-                    height: '80px',
-                    borderRadius: '8px',
-                    border: '1px solid #d1d5db',
-                    padding: '10px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    resize: 'none'
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={handleSubmitFeedback}
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#7c3aed',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    opacity: submitting ? 0.6 : 1
-                  }}
-                >
-                  {submitting ? 'Submitting...' : 'Accept & Close Complaint'}
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={handleReopen}
-                  style={{
-                    backgroundColor: '#ef4444',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    opacity: submitting ? 0.6 : 1
-                  }}
-                >
-                  Reopen Issue
-                </button>
-              </div>
+              ) : (
+                <div style={{ textAlign: 'center', color: THEME.colors.gray500, fontSize: '13px', padding: '10px 0' }}>
+                  <span>⏳</span> No warden has been assigned yet. Admin will assign this shortly.
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Show Submitted Feedback */}
-          {complaint.status === 'CLOSED' && complaint.rating && (
-            <div style={{ marginTop: '24px', padding: '20px', backgroundColor: '#f0fdf4', borderLeft: '4px solid #22c55e', borderRadius: '8px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: '#166534', margin: '0 0 6px 0' }}>✅ Verification & Feedback Submitted</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span key={star} style={{ fontSize: '18px', color: star <= complaint.rating ? '#eab308' : '#e5e7eb' }}>★</span>
-                ))}
-              </div>
-              {complaint.feedback && <p style={{ fontSize: '14px', color: '#1b5e20', margin: 0, fontStyle: 'italic' }}>"{complaint.feedback}"</p>}
-            </div>
-          )}
-
-          {/* Stamp & Verification Area (Visible in print) */}
-          <div style={{ marginTop: '40px', borderTop: '1px dashed #cbd5e1', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <div>
-              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>This is an automated system generated receipt.</p>
-              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>Printed on: {new Date().toLocaleString()}</p>
-            </div>
-            <div style={{ textAlign: 'center', width: '150px' }}>
-              <div style={{ height: '40px', borderBottom: '1px solid #cbd5e1' }}></div>
-              <p style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '6px' }}>Authority Sign / Stamp</p>
-            </div>
           </div>
-
         </div>
+
       </div>
-    </div>
+    </PortalLayout>
   );
 };
 
-
-const styles = {
-  page:         { minHeight: '100vh', backgroundColor: '#f8fafc' },
-  content:      { maxWidth: '750px', margin: '0 auto', padding: '32px 24px' },
-  loading:      { textAlign: 'center', padding: '60px', color: '#64748b' },
-  backBtn:      { background: 'none', border: 'none', fontSize: '15px', color: '#4f46e5', cursor: 'pointer', fontWeight: '600', marginBottom: '20px', padding: 0 },
-  card:         { backgroundColor: '#fff', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
-  titleRow:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
-  title:        { fontSize: '22px', fontWeight: '700', color: '#1e293b', margin: 0 },
-  metaGrid:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '16px' },
-  metaItem:     {},
-  metaLabel:    { fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 4px 0' },
-  metaValue:    { fontSize: '14px', color: '#1e293b', fontWeight: '600', margin: 0 },
-  section:      { marginBottom: '20px' },
-  sectionLabel: { fontSize: '13px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' },
-  sectionText:  { fontSize: '15px', color: '#374151', lineHeight: '1.6', margin: 0 },
-  remarkBox:    { backgroundColor: '#eff6ff', borderRadius: '8px', padding: '16px', borderLeft: '4px solid #3b82f6' },
-  remarkLabel:  { fontSize: '13px', fontWeight: '700', color: '#1d4ed8', margin: '0 0 8px 0' },
-  remarkText:   { fontSize: '14px', color: '#1e40af', margin: 0, lineHeight: '1.5' },
-};
-
-export default ComplaintDetail;
+export default StudentComplaintDetail;

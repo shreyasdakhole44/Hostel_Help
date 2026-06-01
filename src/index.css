@@ -1,129 +1,106 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import "tailwindcss";
 
-
-@theme {
-  --color-primary-50: #f5f3ff;
-  --color-primary-100: #ede9fe;
-  --color-primary-200: #ddd6fe;
-  --color-primary-300: #c4b5fd;
-  --color-primary-400: #a78bfa;
-  --color-primary-500: #8b5cf6;
-  --color-primary-600: #7c3aed;
-  --color-primary-700: #6d28d9;
-  --color-primary-800: #5b21b6;
-  --color-primary-900: #4c1d95;
-}
-
-
-
-
-
+/* Basic reset and font application */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  background-color: #F9FAFB;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* Premium UI Utility Classes */
-.gradient-indigo {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+body {
+  overflow-x: hidden;
 }
 
-.gradient-sky {
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%) !important;
-}
-
-.gradient-purple {
-  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
-}
-
-.hover-card {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease !important;
-}
-
-.hover-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.08) !important;
-}
-
-.hover-btn {
-  transition: all 0.2s ease-in-out !important;
-}
-
-.hover-btn:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-
-.hover-btn:active {
-  transform: translateY(0);
-}
-
-.hover-row {
-  transition: background-color 0.2s ease;
-}
-
-.hover-row:hover {
-  background-color: #f8fafc !important;
-}
-
-/* Print Utilities for PDF Generation */
-@media print {
-  body * {
-    visibility: hidden;
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
 
-  /* Selectively make the print ticket visible */
-  .print-area,
-  .print-area * {
-    visibility: visible;
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    max-width: 100% !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background-color: #ffffff !important;
-    color: #000000 !important;
+  50% {
+    opacity: .5;
+    transform: scale(1.1);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
   }
 
-  /* Hide print buttons and navigation */
-  .no-print,
-  nav,
-  button,
-  input,
-  select {
-    display: none !important;
+  to {
+    transform: translateX(0);
   }
+}
 
-  /* Disable screen-only borders and shadows */
-  .print-clean {
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: none !important;
-    border-radius: 8px !important;
-    padding: 24px !important;
+.slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar for premium SaaS feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9FAFB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8B5CF6;
+}
+
+/* Responsive Navbar Logo Branding */
+.navbar-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .navbar-logo {
+    height: 36px;
   }
 }

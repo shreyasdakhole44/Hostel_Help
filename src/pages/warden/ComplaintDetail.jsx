@@ -1,74 +1,66 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import Navbar from '../../components/Navbar';
+import { complaintService } from '../../services/complaintService';
+import PortalLayout from '../../components/PortalLayout';
 import StatusBadge from '../../components/StatusBadge';
-import api from '../../services/api';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { THEME } from '../../theme';
 
-const ComplaintDetail = () => {
+const WardenComplaintDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState(''); // 'RESOLVED_PENDING' or 'REJECTED'
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [remark, setRemark] = useState('');
 
-  useEffect(() => {
-    fetchComplaint();
-  }, [id]);
-
-  const fetchComplaint = async () => {
+  const fetchComplaintDetail = async () => {
     try {
-      const res = await api.get(`/api/warden/complaints/${id}`);
-      setComplaint(res.data);
-      if (res.data.status === 'IN_PROGRESS') {
-        setUpdateStatus('RESOLVED_PENDING');
+      const data = await complaintService.getWardenComplaintDetail(id);
+      setComplaint(data);
+      // Pre-select next status based on state machine
+      if (data.status === 'ASSIGNED') {
+        setSelectedStatus('IN_PROGRESS');
+      } else if (data.status === 'IN_PROGRESS') {
+        setSelectedStatus('RESOLVED');
       }
-      setRemark(res.data.wardenRemark || '');
-    } catch (err) {
-      console.error('Error fetching complaint detail', err);
+      setRemark(data.wardenRemark || '');
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to load complaint details.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStartWorking = async () => {
-    setSubmitting(true);
-    try {
-      const res = await api.put(`/api/warden/complaints/${id}/status`, {
-        status: 'IN_PROGRESS',
-        wardenRemark: 'Started working on this issue.',
-      });
-      setComplaint(res.data);
-      setUpdateStatus('RESOLVED_PENDING');
-      setRemark('Started working on this issue.');
-      toast.success('Complaint status updated to IN PROGRESS');
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to update status';
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    fetchComplaintDetail();
+  }, [id]);
 
-  const handleFinalizeStatus = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    if (!remark.trim()) {
-      toast.warning('Please enter a remark before finalizing.');
+    if (!selectedStatus) {
+      toast.error('Please select a target status.');
       return;
     }
+    if ((selectedStatus === 'RESOLVED' || selectedStatus === 'REJECTED') && !remark.trim()) {
+      toast.error('A remark is required when resolving or rejecting complaints.');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const res = await api.put(`/api/warden/complaints/${id}/status`, {
-        status: updateStatus,
-        wardenRemark: remark,
+      await complaintService.updateWardenComplaintStatus(id, {
+        status: selectedStatus,
+        remark: remark
       });
-      setComplaint(res.data);
-      toast.success(`Complaint marked as ${updateStatus}`);
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to finalize complaint';
+      toast.success(`Complaint marked as ${selectedStatus.replace('_', ' ')} successfully!`);
+      await fetchComplaintDetail();
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Failed to update complaint status.';
       toast.error(msg);
     } finally {
       setSubmitting(false);
@@ -77,203 +69,375 @@ const ComplaintDetail = () => {
 
   if (loading) {
     return (
-      <div style={styles.page}>
-        <Navbar />
-        <p style={styles.loading}>Loading complaint details...</p>
-      </div>
+      <PortalLayout title="Complaint Action" breadcrumbs={['Dashboard', 'Complaints', 'Detail']}>
+        <LoadingSpinner />
+      </PortalLayout>
     );
   }
 
   if (!complaint) {
     return (
-      <div style={styles.page}>
-        <Navbar />
-        <p style={styles.loading}>Complaint not found.</p>
-      </div>
+      <PortalLayout title="Complaint Action" breadcrumbs={['Dashboard', 'Complaints', 'Detail']}>
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>Complaint not found.</div>
+      </PortalLayout>
     );
   }
 
   return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.content}>
+    <PortalLayout title={`Update Ticket #${complaint.id}`} breadcrumbs={['Dashboard', 'Complaints', `Detail #${complaint.id}`]}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-        <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Complaints</button>
-
-        <div style={styles.card}>
-          {/* Header row */}
-          <div style={styles.headerRow}>
-            <div>
-              <span style={styles.complaintId}>Complaint #{complaint.id}</span>
-              <h2 style={styles.title}>{complaint.title}</h2>
-            </div>
-            <StatusBadge status={complaint.status} />
-          </div>
-
-          {/* Meta Grid */}
-          <div style={styles.metaGrid}>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Student Name</p>
-              <p style={styles.metaValue}>{complaint.studentName}</p>
-            </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Category</p>
-              <p style={styles.metaValue}>{complaint.categoryName || '—'}</p>
-            </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Submitted On</p>
-              <p style={styles.metaValue}>{new Date(complaint.createdAt).toLocaleString()}</p>
-            </div>
-            <div style={styles.metaItem}>
-              <p style={styles.metaLabel}>Last Updated</p>
-              <p style={styles.metaValue}>{new Date(complaint.updatedAt).toLocaleString()}</p>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div style={styles.section}>
-            <p style={styles.sectionLabel}>Student Description</p>
-            <p style={styles.sectionText}>{complaint.description}</p>
-          </div>
-
-          {/* Existing remarks */}
-          {complaint.wardenRemark && (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED' || complaint.status === 'REJECTED') && (
-            <div style={{
-              ...styles.remarkBox,
-              borderLeftColor: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#10b981' : '#ef4444',
-              backgroundColor: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#ecfdf5' : '#fef2f2',
-            }}>
-              <p style={{
-                ...styles.remarkLabel,
-                color: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#047857' : '#b91c1c',
-              }}>
-                💬 Warden Remark ({complaint.status})
-              </p>
-              <p style={{
-                ...styles.remarkText,
-                color: (complaint.status === 'RESOLVED' || complaint.status === 'RESOLVED_PENDING' || complaint.status === 'CLOSED') ? '#065f46' : '#991b1b',
-              }}>{complaint.wardenRemark}</p>
-            </div>
-          )}
-
-          {/* Status Updates Interaction */}
-          {complaint.status === 'ASSIGNED' && (
-            <div style={styles.actionPanel}>
-              <h3 style={styles.actionTitle}>Take Action</h3>
-              <p style={styles.actionDesc}>Acknowledge this complaint and start working on resolving it.</p>
-              <button
-                onClick={handleStartWorking}
-                disabled={submitting}
-                style={styles.primaryBtn}
-              >
-                {submitting ? 'Updating...' : '🔧 Start Working / In Progress'}
-              </button>
-            </div>
-          )}
-
-          {complaint.status === 'IN_PROGRESS' && (
-            <div style={styles.actionPanel}>
-              <h3 style={styles.actionTitle}>Resolve or Reject Complaint</h3>
-              <form onSubmit={handleFinalizeStatus} style={styles.form}>
-                
-                <div style={styles.radioGroup}>
-                  <label style={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="statusChoice"
-                      value="RESOLVED_PENDING"
-                      checked={updateStatus === 'RESOLVED_PENDING'}
-                      onChange={() => setUpdateStatus('RESOLVED_PENDING')}
-                      style={styles.radioInput}
-                    />
-                    <span style={{color: '#059669', fontWeight: '600'}}>Mark Resolved</span>
-                  </label>
-                  <label style={styles.radioLabel}>
-                    <input
-                      type="radio"
-                      name="statusChoice"
-                      value="REJECTED"
-                      checked={updateStatus === 'REJECTED'}
-                      onChange={() => setUpdateStatus('REJECTED')}
-                      style={styles.radioInput}
-                    />
-                    <span style={{color: '#dc2626', fontWeight: '600'}}>Reject Complaint</span>
-                  </label>
-                </div>
-
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Warden Remark / Resolution Summary *</label>
-                  <textarea
-                    rows={4}
-                    value={remark}
-                    onChange={(e) => setRemark(e.target.value)}
-                    placeholder="Enter details about what was fixed or why this was rejected..."
-                    required
-                    style={styles.textarea}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  style={{
-                    ...styles.primaryBtn,
-                    backgroundColor: updateStatus === 'RESOLVED_PENDING' ? '#059669' : '#dc2626',
-                    boxShadow: updateStatus === 'RESOLVED_PENDING' ? '0 4px 12px rgba(5, 150, 105, 0.2)' : '0 4px 12px rgba(220, 38, 38, 0.2)'
-                  }}
-                >
-                  {submitting ? 'Submitting...' : 'Submit Resolution'}
-                </button>
-              </form>
-            </div>
-          )}
+        {/* Back Button */}
+        <div>
+          <button
+            onClick={() => navigate('/warden/dashboard')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: THEME.colors.purple600,
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 0',
+              transition: THEME.transition
+            }}
+            onMouseEnter={(e) => { e.target.style.color = THEME.colors.purple700; }}
+            onMouseLeave={(e) => { e.target.style.color = THEME.colors.purple600; }}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
+
+        {/* 65/35 Two Column Grid */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '24px',
+            flexWrap: 'wrap',
+            width: '100%',
+            alignItems: 'flex-start'
+          }}
+        >
+          {/* Left Column (65%): Main Content */}
+          <div
+            style={{
+              flex: '2 1 500px',
+              backgroundColor: THEME.colors.white,
+              borderRadius: THEME.radius.card,
+              padding: '32px',
+              boxShadow: THEME.shadows.card,
+              border: `1px solid ${THEME.colors.gray200}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, margin: 0 }}>
+                {complaint.title}
+              </h2>
+              <StatusBadge status={complaint.status} />
+            </div>
+
+            {/* Meta Row: Student | Room | Category | Date */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+                backgroundColor: THEME.colors.gray50,
+                borderRadius: THEME.radius.card,
+                padding: '20px',
+                border: `1px solid ${THEME.colors.gray200}`,
+                fontSize: '14px'
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Student</div>
+                <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>👤 {complaint.studentName || 'Student'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Room Number</div>
+                <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>🏠 {complaint.roomNumber || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Category</div>
+                <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>📁 {complaint.categoryName || 'General'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Submitted Date</div>
+                <div style={{ fontWeight: '600', color: THEME.colors.gray900 }}>📅 {new Date(complaint.createdAt).toLocaleDateString()}</div>
+              </div>
+            </div>
+
+            <div style={{ height: '1px', backgroundColor: THEME.colors.gray100 }} />
+
+            {/* Description */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: THEME.colors.gray500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Student Description
+              </div>
+              <p
+                style={{
+                  fontSize: '15px',
+                  color: THEME.colors.gray700,
+                  lineHeight: '1.6',
+                  margin: 0,
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
+                {complaint.description}
+              </p>
+            </div>
+
+            {/* Existing remark if resolved/rejected */}
+            {complaint.wardenRemark && (
+              <div
+                style={{
+                  backgroundColor: THEME.colors.purple50,
+                  borderLeft: `3px solid ${THEME.colors.purple600}`,
+                  borderRadius: THEME.radius.small,
+                  padding: '20px',
+                  marginTop: '12px'
+                }}
+              >
+                <div style={{ fontSize: '13px', fontWeight: '700', color: THEME.colors.purple900, marginBottom: '6px' }}>
+                  💬 Filed Remark ({complaint.status})
+                </div>
+                <p style={{ fontSize: '14px', color: THEME.colors.purple900, margin: 0, lineHeight: '1.5' }}>
+                  {complaint.wardenRemark}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column (35%): Update Card */}
+          <div style={{ flex: '1 1 300px' }}>
+            <div
+              style={{
+                backgroundColor: THEME.colors.white,
+                borderRadius: THEME.radius.card,
+                padding: '24px',
+                boxShadow: THEME.shadows.card,
+                border: `1px solid ${THEME.colors.gray200}`
+              }}
+            >
+              <h3 style={{ fontSize: '16px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '20px', marginTop: 0 }}>
+                Update Complaint
+              </h3>
+
+              {/* Current Status Badge row */}
+              <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: THEME.colors.gray500, fontWeight: '500' }}>Current Status:</span>
+                <StatusBadge status={complaint.status} />
+              </div>
+
+              {/* Status Update Form */}
+              {(complaint.status === 'ASSIGNED' || complaint.status === 'IN_PROGRESS' || complaint.status === 'PENDING') ? (
+                <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  
+                  {/* Select status radios */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                      Change Status:
+                    </span>
+
+                    {/* ASSIGNED -> IN_PROGRESS Option */}
+                    {(complaint.status === 'ASSIGNED' || complaint.status === 'PENDING') && (
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          padding: '12px',
+                          border: `1.5px solid ${selectedStatus === 'IN_PROGRESS' ? THEME.colors.purple500 : THEME.colors.gray200}`,
+                          borderRadius: THEME.radius.input,
+                          backgroundColor: selectedStatus === 'IN_PROGRESS' ? THEME.colors.purple50 : 'transparent',
+                          transition: THEME.transition
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="targetStatus"
+                          value="IN_PROGRESS"
+                          checked={selectedStatus === 'IN_PROGRESS'}
+                          onChange={() => setSelectedStatus('IN_PROGRESS')}
+                          style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
+                        />
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
+                            In Progress
+                          </div>
+                          <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
+                            Acknowledge the issue and begin repairing.
+                          </p>
+                        </div>
+                      </label>
+                    )}
+
+                    {/* IN_PROGRESS -> RESOLVED or REJECTED Options */}
+                    {complaint.status === 'IN_PROGRESS' && (
+                      <>
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '10px',
+                            cursor: 'pointer',
+                            padding: '12px',
+                            border: `1.5px solid ${selectedStatus === 'RESOLVED' ? THEME.colors.purple500 : THEME.colors.gray200}`,
+                            borderRadius: THEME.radius.input,
+                            backgroundColor: selectedStatus === 'RESOLVED' ? THEME.colors.purple50 : 'transparent',
+                            transition: THEME.transition
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="targetStatus"
+                            value="RESOLVED"
+                            checked={selectedStatus === 'RESOLVED'}
+                            onChange={() => setSelectedStatus('RESOLVED')}
+                            style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
+                          />
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
+                              Resolved
+                            </div>
+                            <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
+                              Successfully resolve the reported issue.
+                            </p>
+                          </div>
+                        </label>
+
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '10px',
+                            cursor: 'pointer',
+                            padding: '12px',
+                            border: `1.5px solid ${selectedStatus === 'REJECTED' ? THEME.colors.purple500 : THEME.colors.gray200}`,
+                            borderRadius: THEME.radius.input,
+                            backgroundColor: selectedStatus === 'REJECTED' ? THEME.colors.purple50 : 'transparent',
+                            transition: THEME.transition
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="targetStatus"
+                            value="REJECTED"
+                            checked={selectedStatus === 'REJECTED'}
+                            onChange={() => setSelectedStatus('REJECTED')}
+                            style={{ accentColor: THEME.colors.purple600, marginTop: '3px' }}
+                          />
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray900 }}>
+                              Rejected
+                            </div>
+                            <p style={{ fontSize: '12px', color: THEME.colors.gray500, margin: '2px 0 0 0' }}>
+                              Reject complaint (incorrect category, duplicate, etc.)
+                            </p>
+                          </div>
+                        </label>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Add remark */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+                        Add Remark:
+                      </label>
+                      <span style={{ fontSize: '11px', color: THEME.colors.gray400 }}>
+                        {remark.length}/200 chars
+                      </span>
+                    </div>
+                    <textarea
+                      value={remark}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 200) {
+                          setRemark(e.target.value);
+                        }
+                      }}
+                      placeholder="Specify materials replaced, repair specifics, or rejection reason..."
+                      rows={4}
+                      style={{
+                        borderRadius: THEME.radius.input,
+                        border: `1.5px solid ${THEME.colors.gray200}`,
+                        padding: '10px 12px',
+                        fontSize: '13px',
+                        outline: 'none',
+                        resize: 'none',
+                        fontFamily: THEME.fonts.family,
+                        transition: THEME.transition
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = THEME.colors.purple500;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(139,92,246,0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = THEME.colors.gray200;
+                        e.target.style.boxShadow = 'none';
+                      }}
+                      required={selectedStatus === 'RESOLVED' || selectedStatus === 'REJECTED'}
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    style={{
+                      background: THEME.gradients.primaryBtn,
+                      color: THEME.colors.white,
+                      border: 'none',
+                      height: '42px',
+                      borderRadius: THEME.radius.button,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: submitting ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: THEME.shadows.button,
+                      transition: THEME.transition,
+                      marginTop: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!submitting) e.currentTarget.style.filter = 'brightness(0.95)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!submitting) e.currentTarget.style.filter = 'none';
+                    }}
+                  >
+                    {submitting ? <LoadingSpinner size="18px" color="#FFFFFF" /> : 'Confirm Update'}
+                  </button>
+
+                  <div style={{ textAlign: 'center', fontSize: '13px' }}>
+                    <Link to="/warden/dashboard" style={{ color: THEME.colors.gray500, textDecoration: 'none', fontWeight: '500' }}>
+                      Cancel
+                    </Link>
+                  </div>
+
+                </form>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '16px 0', borderTop: `1px solid ${THEME.colors.gray100}`, color: THEME.colors.gray500, fontSize: '14px' }}>
+                  <span>🔒</span> This complaint has been finalized ({complaint.status.replace('_', ' ')}). No further actions are needed.
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+
       </div>
-    </div>
+    </PortalLayout>
   );
 };
 
-const styles = {
-  page: { minHeight: '100vh', backgroundColor: '#f8fafc' },
-  content: { maxWidth: '750px', margin: '0 auto', padding: '32px 24px' },
-  loading: { textAlign: 'center', padding: '60px', color: '#64748b' },
-  backBtn: { background: 'none', border: 'none', fontSize: '15px', color: '#4f46e5', cursor: 'pointer', fontWeight: '600', marginBottom: '20px', padding: 0 },
-  card: { backgroundColor: '#fff', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' },
-  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
-  complaintId: { fontSize: '13px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' },
-  title: { fontSize: '22px', fontWeight: '700', color: '#1e293b', margin: '4px 0 0 0' },
-  metaGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px', backgroundColor: '#f8fafc', borderRadius: '8px', padding: '16px', border: '1px solid #e2e8f0' },
-  metaItem: {},
-  metaLabel: { fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 4px 0' },
-  metaValue: { fontSize: '14px', color: '#1e293b', fontWeight: '600', margin: 0 },
-  section: { marginBottom: '24px' },
-  sectionLabel: { fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px' },
-  sectionText: { fontSize: '15px', color: '#334155', lineHeight: '1.6', margin: 0 },
-  remarkBox: { borderLeft: '4px solid', borderRadius: '8px', padding: '16px', marginBottom: '24px' },
-  remarkLabel: { fontSize: '13px', fontWeight: '700', margin: '0 0 8px 0' },
-  remarkText: { fontSize: '14px', margin: 0, lineHeight: '1.5' },
-  actionPanel: { borderTop: '1px solid #e2e8f0', paddingTop: '24px', marginTop: '24px' },
-  actionTitle: { fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' },
-  actionDesc: { fontSize: '13px', color: '#64748b', marginBottom: '16px' },
-  primaryBtn: {
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    padding: '12px 24px',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '14px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)',
-    transition: 'all 0.2s',
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  radioGroup: { display: 'flex', gap: '24px', margin: '8px 0' },
-  radioLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' },
-  radioInput: { width: '16px', height: '16px', accentColor: '#4f46e5' },
-  inputGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  label: { fontSize: '13px', fontWeight: '600', color: '#374151' },
-  textarea: { padding: '12px', borderRadius: '8px', border: '1.5px solid #e2e8f0', outline: 'none', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' },
-};
-
-export default ComplaintDetail;
+export default WardenComplaintDetail;

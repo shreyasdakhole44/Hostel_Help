@@ -1,544 +1,794 @@
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { THEME } from '../theme';
+import StatusBadge from '../components/StatusBadge';
+import hostelHelpLogo from '../assets/hostel-help-logo.png';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
 
-  const features = [
-    {
-      title: 'Submit Complaints',
-      desc: 'Students can easily report lodging, electrical, plumbing, or internet issues in seconds.',
-      icon: '📝',
-    },
-    {
-      title: 'Track Status',
-      desc: 'Real-time status updates from Pending, Assigned, In Progress, to Resolved or Rejected.',
-      icon: '⏳',
-    },
-    {
-      title: 'Warden Assignment',
-      desc: 'Admin assigns appropriate wardens to specific complaint categories instantly.',
-      icon: '👷',
-    },
-    {
-      title: 'Admin Dashboard',
-      desc: 'A powerful backend panel for managing users, categories, and resolving backlogs.',
-      icon: '📊',
-    },
-    {
-      title: 'Real-time Updates',
-      desc: 'Get instant feedback on actions taken by wardens regarding your issues.',
-      icon: '🔔',
-    },
-    {
-      title: 'Secure Access',
-      desc: 'Protected role-based authorization using Spring Security 6 & JWT auth.',
-      icon: '🛡️',
-    },
-  ];
+  // Monitor scroll to add shadow to navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const steps = [
-    {
-      number: '01',
-      title: 'Submit Issue',
-      desc: 'Create an account and submit a detailed complaint with its category.',
-      icon: '✍️',
-    },
-    {
-      number: '02',
-      title: 'Admin Review',
-      desc: 'Admin logs in, inspects new complaints, and assigns them to the appropriate warden.',
-      icon: '🔍',
-    },
-    {
-      number: '03',
-      title: 'Warden Action',
-      desc: 'The warden accepts the task, resolves the issue, and leaves a response remark.',
-      icon: '🛠️',
-    },
+  const featureList = [
+    { emoji: '📝', title: 'Submit Complaints', desc: 'Log complaints instantly, choose categories, and get immediate tracking numbers.' },
+    { emoji: '📊', title: 'Real-time Tracking', desc: 'Watch your complaint go from Pending to In Progress to Resolved in real-time.' },
+    { emoji: '👷', title: 'Smart Assignment', desc: 'Auto-route complaints directly to the warden assigned to that specific category.' },
+    { emoji: '🔔', title: 'Email Alerts', desc: 'Receive instant notifications when wardens accept or resolve your complaints.' },
+    { emoji: '📋', title: 'Admin Control', desc: 'Full-featured back-office admin dashboard for categories, wardens, and metrics.' },
+    { emoji: '⭐', title: 'Feedback System', desc: 'Students can review and rate resolutions to ensure quality standards.' }
   ];
 
   return (
-    <div style={styles.container}>
-      <Navbar />
+    <div style={{ minHeight: '100vh', backgroundColor: THEME.colors.white, fontFamily: THEME.fonts.family }}>
+      
+      {/* Sticky Navbar */}
+      <nav
+        style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '72px',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(8px)',
+          borderBottom: `1px solid ${THEME.colors.gray100}`,
+          boxShadow: scrolled ? '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 40px',
+          zIndex: 1000,
+          transition: THEME.transition
+        }}
+      >
+        {/* Left: Logo */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer'
+          }}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <img
+            src={hostelHelpLogo}
+            alt="Hostel Help Logo"
+            style={{
+              height: '40px',
+              width: 'auto',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+
+        {/* Center: Links */}
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          {['Features', 'How it Works', 'Stats', 'About'].map((link) => (
+            <a
+              key={link}
+              href={`#${link.toLowerCase().replace(/ /g, '-')}`}
+              style={{
+                textDecoration: 'none',
+                color: THEME.colors.gray700,
+                fontSize: '15px',
+                fontWeight: '500',
+                transition: THEME.transition
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.color = THEME.colors.purple600;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = THEME.colors.gray700;
+              }}
+            >
+              {link}
+            </a>
+          ))}
+        </div>
+
+        {/* Right: Actions */}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/login')}
+            style={{
+              background: 'none',
+              border: `1.5px solid ${THEME.colors.purple600}`,
+              borderRadius: THEME.radius.button,
+              padding: '8px 18px',
+              color: THEME.colors.purple600,
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: THEME.transition
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = THEME.colors.purple50;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => navigate('/register')}
+            style={{
+              background: THEME.gradients.primaryBtn,
+              border: 'none',
+              borderRadius: THEME.radius.button,
+              padding: '10px 20px',
+              color: THEME.colors.white,
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: THEME.shadows.button,
+              transition: THEME.transition
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.filter = 'brightness(0.95)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.filter = 'none';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Get Started Free
+          </button>
+        </div>
+      </nav>
 
       {/* Hero Section */}
-      <section style={styles.hero} id="home">
-        <div style={styles.heroContent}>
-          <span style={styles.badge}>🏠 Modern Hostel Living</span>
-          <h1 style={styles.heroTitle}>
-            Smart Hostel <br />
-            <span style={styles.gradientText}>Complaint Management</span>
-          </h1>
-          <p style={styles.heroSub}>
-            Hostel Help is the unified workspace for students, wardens, and administrators. 
-            Submit reports, assign tasks, and track maintenance resolutions in real-time.
-          </p>
-          <div style={styles.heroBtns}>
-            <button onClick={() => navigate('/login')} style={styles.primaryBtn}>
-              Get Started
-            </button>
-            <a href="#features" style={styles.secondaryBtn}>
-              Learn More
-            </a>
-          </div>
-        </div>
-        <div style={styles.heroGraphic}>
-          <div style={styles.illustrationContainer}>
-            <svg viewBox="0 0 500 400" width="100%" height="100%" style={styles.svg}>
-              <defs>
-                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#818cf8', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#4f46e5', stopOpacity: 1 }} />
-                </linearGradient>
-                <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#38bdf8', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#0ea5e9', stopOpacity: 1 }} />
-                </linearGradient>
-              </defs>
-              {/* Background Shapes */}
-              <circle cx="400" cy="100" r="80" fill="url(#grad2)" opacity="0.15" />
-              <rect x="50" y="250" width="120" height="120" rx="20" fill="url(#grad1)" opacity="0.1" transform="rotate(15 110 310)" />
-              {/* Central Dashboard Frame */}
-              <rect x="100" y="80" width="300" height="220" rx="16" fill="#ffffff" stroke="#e2e8f0" strokeWidth="4" filter="drop-shadow(0 10px 15px rgba(0,0,0,0.05))" />
-              {/* Header Bar */}
-              <rect x="100" y="80" width="300" height="40" rx="16" fill="#f8fafc" />
-              <circle cx="130" cy="100" r="6" fill="#ef4444" />
-              <circle cx="150" cy="100" r="6" fill="#eab308" />
-              <circle cx="170" cy="100" r="6" fill="#22c55e" />
-              {/* Content mockups inside SVG */}
-              <rect x="120" y="140" width="160" height="18" rx="4" fill="#e2e8f0" />
-              <rect x="120" y="170" width="260" height="10" rx="2" fill="#f1f5f9" />
-              <rect x="120" y="190" width="220" height="10" rx="2" fill="#f1f5f9" />
-              {/* Action Buttons Mockup */}
-              <rect x="120" y="230" width="70" height="24" rx="6" fill="url(#grad1)" />
-              <rect x="200" y="230" width="70" height="24" rx="6" fill="url(#grad2)" />
-              {/* Status Badge Mockup */}
-              <rect x="300" y="137" width="70" height="22" rx="11" fill="#d1fae5" />
-              <text x="335" y="152" fill="#065f46" fontSize="10" fontWeight="bold" textAnchor="middle">RESOLVED</text>
-            </svg>
-          </div>
-        </div>
-      </section>
+      <section
+        style={{
+          padding: '100px 40px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '64px',
+          flexWrap: 'wrap'
+        }}
+      >
+        {/* Hero Left */}
+        <div style={{ flex: '1.2', minWidth: '320px' }}>
+          {/* Badge */}
+          <span
+            style={{
+              display: 'inline-block',
+              backgroundColor: THEME.colors.purple100,
+              color: THEME.colors.purple700,
+              padding: '6px 16px',
+              borderRadius: THEME.radius.badge,
+              fontSize: '13px',
+              fontWeight: '700',
+              marginBottom: '24px'
+            }}
+          >
+            🎓 Built for Modern Hostels
+          </span>
 
-      {/* Stats Bar */}
-      <section style={styles.stats}>
-        <div style={styles.statsInner}>
-          <div style={styles.statItem}>
-            <p style={styles.statNumber}>500+</p>
-            <p style={styles.statLabel}>Active Students</p>
+          <h1
+            style={{
+              fontSize: THEME.fonts.sizes.h1,
+              fontWeight: '800',
+              color: THEME.colors.gray900,
+              lineHeight: '1.2',
+              marginBottom: '20px',
+              maxWidth: '560px'
+            }}
+          >
+            Smart Complaint Management for Modern Hostels
+          </h1>
+
+          <p
+            style={{
+              fontSize: '18px',
+              color: THEME.colors.gray700,
+              lineHeight: '1.6',
+              marginBottom: '32px',
+              maxWidth: '480px'
+            }}
+          >
+            Streamline resolution times, assign wardens instantly, and keep students informed every step of the way with a premium SaaS interface.
+          </p>
+
+          {/* Hero Buttons */}
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                background: THEME.gradients.primaryBtn,
+                border: 'none',
+                borderRadius: THEME.radius.button,
+                padding: '14px 28px',
+                color: THEME.colors.white,
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: THEME.shadows.button,
+                transition: THEME.transition
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.filter = 'brightness(0.95)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.filter = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Start for Free →
+            </button>
+            <button
+              style={{
+                background: THEME.colors.white,
+                border: `1.5px solid ${THEME.colors.gray200}`,
+                borderRadius: THEME.radius.button,
+                padding: '14px 28px',
+                color: THEME.colors.gray700,
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: THEME.transition
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = THEME.colors.gray50;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = THEME.colors.white;
+              }}
+            >
+              Watch Demo
+            </button>
           </div>
-          <div style={styles.statDivider} />
-          <div style={styles.statItem}>
-            <p style={styles.statNumber}>50+</p>
-            <p style={styles.statLabel}>Assigned Wardens</p>
+
+          {/* Trust Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Avatars */}
+            <div style={{ display: 'flex', marginRight: '8px' }}>
+              {[1, 2, 3, 4, 5].map((idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: `2px solid ${THEME.colors.white}`,
+                    backgroundColor: THEME.colors.purple500,
+                    marginLeft: idx > 1 ? '-8px' : 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: THEME.colors.white,
+                    fontSize: '10px',
+                    fontWeight: '700'
+                  }}
+                >
+                  {['A', 'R', 'S', 'N', 'K'][idx - 1]}
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ display: 'flex', color: THEME.colors.yellow500, fontSize: '14px', lineHeight: 1 }}>
+                ★★★★★
+              </div>
+              <span style={{ fontSize: '13px', color: THEME.colors.gray500, fontWeight: '500' }}>
+                Trusted by 500+ students & staff
+              </span>
+            </div>
           </div>
-          <div style={styles.statDivider} />
-          <div style={styles.statItem}>
-            <p style={styles.statNumber}>99%</p>
-            <p style={styles.statLabel}>Resolution Rate</p>
+        </div>
+
+        {/* Hero Right: Mockup Card */}
+        <div
+          style={{
+            flex: '0.8',
+            minWidth: '320px',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '460px',
+              backgroundColor: THEME.colors.white,
+              borderRadius: THEME.radius.card,
+              boxShadow: '0 25px 50px -12px rgba(124, 58, 237, 0.25)',
+              transform: 'rotate(-2deg)',
+              overflow: 'hidden',
+              border: `1px solid ${THEME.colors.gray100}`,
+              transition: THEME.transition
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'rotate(0deg) scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'rotate(-2deg) scale(1)';
+            }}
+          >
+            {/* Gradient accent bar */}
+            <div style={{ height: '6px', background: THEME.gradients.hero }} />
+
+            {/* Dashboard Mockup Content */}
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '600' }}>OVERVIEW</span>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: THEME.colors.gray900 }}>Complaints Center</div>
+                </div>
+                <span style={{ fontSize: '20px' }}>⚡</span>
+              </div>
+
+              {/* Mini Stat Cards */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+                {[
+                  { value: '28', label: 'Total', color: THEME.colors.blue500 },
+                  { value: '3', label: 'Pending', color: THEME.colors.yellow500 },
+                  { value: '25', label: 'Resolved', color: THEME.colors.green500 }
+                ].map((stat, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      flex: 1,
+                      backgroundColor: THEME.colors.gray50,
+                      borderRadius: THEME.radius.small,
+                      padding: '12px',
+                      textAlign: 'center',
+                      border: `1px solid ${THEME.colors.gray100}`
+                    }}
+                  >
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: THEME.colors.gray900 }}>{stat.value}</div>
+                    <div style={{ fontSize: '10px', color: THEME.colors.gray500, fontWeight: '500' }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Small Complaints List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  { title: 'Ceiling Fan Not Working', cat: 'Electrical', status: 'PENDING' },
+                  { title: 'Water Leakage Room 302', cat: 'Plumbing', status: 'IN_PROGRESS' },
+                  { title: 'Wi-Fi Speed Dropping', cat: 'Internet', status: 'RESOLVED' }
+                ].map((comp, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px',
+                      backgroundColor: THEME.colors.white,
+                      border: `1px solid ${THEME.colors.gray100}`,
+                      borderRadius: '10px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: THEME.colors.gray900 }}>{comp.title}</div>
+                      <div style={{ fontSize: '10px', color: THEME.colors.gray500 }}>{comp.cat}</div>
+                    </div>
+                    <StatusBadge status={comp.status} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section style={styles.features} id="features">
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Key Application Features</h2>
-          <p style={styles.sectionSubtitle}>Everything you need to run clean, responsive and timely hostel maintenance</p>
-        </div>
-        <div style={styles.featuresGrid}>
-          {features.map((f, i) => (
-            <div key={i} style={styles.featureCard}>
-              <span style={styles.featureIcon}>{f.icon}</span>
-              <h3 style={styles.featureTitle}>{f.title}</h3>
-              <p style={styles.featureDesc}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <section
+        id="features"
+        style={{
+          backgroundColor: THEME.colors.gray50,
+          padding: '100px 40px',
+          borderTop: `1px solid ${THEME.colors.gray100}`,
+          borderBottom: `1px solid ${THEME.colors.gray100}`
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <span
+            style={{
+              display: 'inline-block',
+              backgroundColor: THEME.colors.purple100,
+              color: THEME.colors.purple600,
+              fontSize: '11px',
+              fontWeight: '700',
+              padding: '4px 12px',
+              borderRadius: THEME.radius.badge,
+              letterSpacing: '0.8px',
+              marginBottom: '16px'
+            }}
+          >
+            FEATURES
+          </span>
+          <h2
+            style={{
+              fontSize: THEME.fonts.sizes.h2,
+              fontWeight: '800',
+              color: THEME.colors.gray900,
+              marginBottom: '48px'
+            }}
+          >
+            Everything you need to manage complaints
+          </h2>
 
-      {/* How it works Section */}
-      <section style={styles.howItWorks} id="how-it-works">
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>How It Works</h2>
-          <p style={styles.sectionSubtitle}>Simple 3-step lifecycle of complaints from submission to resolution</p>
-        </div>
-        <div style={styles.stepsContainer}>
-          {steps.map((s, i) => (
-            <div key={i} style={styles.stepCard}>
-              <div style={styles.stepHeader}>
-                <span style={styles.stepNumber}>{s.number}</span>
-                <span style={styles.stepIcon}>{s.icon}</span>
+          {/* 3-Column Feature Grid */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px',
+              textAlign: 'left'
+            }}
+          >
+            {featureList.map((feat, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: THEME.colors.white,
+                  borderRadius: THEME.radius.card,
+                  padding: '24px',
+                  boxShadow: THEME.shadows.card,
+                  transition: THEME.transition,
+                  cursor: 'default',
+                  border: `1px solid ${THEME.colors.gray100}`
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = THEME.shadows.cardHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = THEME.shadows.card;
+                }}
+              >
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: THEME.colors.purple50,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '22px',
+                    marginBottom: '20px'
+                  }}
+                >
+                  {feat.emoji}
+                </div>
+                <h3
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    color: THEME.colors.gray900,
+                    marginBottom: '8px'
+                  }}
+                >
+                  {feat.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: THEME.colors.gray500,
+                    lineHeight: '1.6'
+                  }}
+                >
+                  {feat.desc}
+                </p>
               </div>
-              <h3 style={styles.stepTitle}>{s.title}</h3>
-              <p style={styles.stepDesc}>{s.desc}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section id="how-it-works" style={{ padding: '100px 40px', backgroundColor: THEME.colors.white }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <h2
+            style={{
+              fontSize: THEME.fonts.sizes.h2,
+              fontWeight: '800',
+              color: THEME.colors.gray900,
+              marginBottom: '64px'
+            }}
+          >
+            How it works
+          </h2>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '40px',
+              flexWrap: 'wrap'
+            }}
+          >
+            {[
+              { num: '1', title: 'Submit Details', desc: 'Students report electrical, plumbing, or internet problems via a forms dashboard.' },
+              { num: '2', title: 'Admin Assigns', desc: 'System auto-routes to wardens, or admin manually manages assignments.' },
+              { num: '3', title: 'Warden Resolves', desc: 'Wardens start working, post remark logs, and mark status as resolved.' }
+            ].map((step, idx) => (
+              <React.Fragment key={idx}>
+                <div style={{ flex: 1, minWidth: '240px', maxWidth: '300px' }}>
+                  <div
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      backgroundColor: THEME.colors.purple600,
+                      color: THEME.colors.white,
+                      fontSize: '24px',
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 20px'
+                    }}
+                  >
+                    {step.num}
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: THEME.colors.gray900, marginBottom: '8px' }}>
+                    {step.title}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: THEME.colors.gray500, lineHeight: '1.6' }}>
+                    {step.desc}
+                  </p>
+                </div>
+                {idx < 2 && (
+                  <div
+                    style={{
+                      fontSize: '24px',
+                      color: THEME.colors.purple100,
+                      fontWeight: '700',
+                      // Hide connectors on mobile screens
+                      ...(window.innerWidth < 768 && {
+                        display: 'none'
+                      })
+                    }}
+                  >
+                    ➔
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Strip */}
+      <section
+        id="stats"
+        style={{
+          background: THEME.gradients.hero,
+          color: THEME.colors.white,
+          padding: '64px 40px',
+          textAlign: 'center'
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1000px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '40px',
+            flexWrap: 'wrap'
+          }}
+        >
+          {[
+            { value: '500+', label: 'Students' },
+            { value: '98%', label: 'Resolution Rate' },
+            { value: '< 24hrs', label: 'Avg Response Time' }
+          ].map((stat, idx) => (
+            <div key={idx} style={{ flex: 1, minWidth: '200px' }}>
+              <div style={{ fontSize: '48px', fontWeight: '800', marginBottom: '8px', lineHeight: 1 }}>
+                {stat.value}
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '500', color: THEME.colors.purple100 }}>
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Contact Section Mock */}
-      <section style={styles.contact} id="contact">
-        <div style={styles.contactCard}>
-          <h2 style={styles.contactTitle}>Need Assistance or Custom Setup?</h2>
-          <p style={styles.contactText}>
-            Our administration support is here to help you deploy Hostel Help for your campus. Get in touch today.
+      {/* CTA Section */}
+      <section style={{ padding: '100px 40px', textAlign: 'center', backgroundColor: THEME.colors.white }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2
+            style={{
+              fontSize: '32px',
+              fontWeight: '800',
+              color: THEME.colors.gray900,
+              marginBottom: '16px'
+            }}
+          >
+            Ready to transform hostel management?
+          </h2>
+          <p
+            style={{
+              fontSize: '18px',
+              color: THEME.colors.gray500,
+              marginBottom: '32px',
+              lineHeight: 1.6
+            }}
+          >
+            Join hundreds of hostels using Hostel Help to resolve issues in hours instead of days.
           </p>
-          <button onClick={() => navigate('/register')} style={styles.contactBtn}>
-            Join as a Student
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                background: THEME.gradients.primaryBtn,
+                border: 'none',
+                borderRadius: THEME.radius.button,
+                padding: '14px 28px',
+                color: THEME.colors.white,
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: THEME.shadows.button,
+                transition: THEME.transition
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.filter = 'brightness(0.95)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.filter = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Start for Free
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                background: THEME.colors.white,
+                border: `1.5px solid ${THEME.colors.purple600}`,
+                borderRadius: THEME.radius.button,
+                padding: '14px 28px',
+                color: THEME.colors.purple600,
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: THEME.transition
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = THEME.colors.purple50;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = THEME.colors.white;
+              }}
+            >
+              Sign In Instead
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={styles.footer}>
-        <div style={styles.footerContent}>
-          <div style={styles.footerBrand}>
-            <span style={styles.footerLogo}>🏠 Hostel Help</span>
-            <p style={styles.footerDesc}>
-              A comprehensive system for resolving accommodation, electrical, internet, and plumbing issues in modern campus hostels.
+      <footer
+        style={{
+          backgroundColor: THEME.colors.gray900,
+          color: THEME.colors.white,
+          padding: '64px 40px 32px'
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '48px',
+            flexWrap: 'wrap',
+            marginBottom: '48px'
+          }}
+        >
+          {/* Logo column */}
+          <div style={{ flex: '1.5', minWidth: '240px' }}>
+            <div 
+              style={{ marginBottom: '16px', cursor: 'pointer' }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <img
+                src={hostelHelpLogo}
+                alt="Hostel Help Logo"
+                style={{
+                  height: '44px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'brightness(0) invert(1)'
+                }}
+              />
+            </div>
+            <p style={{ color: THEME.colors.gray500, fontSize: '14px', lineHeight: 1.6, maxWidth: '280px' }}>
+              Premium complaint management SaaS platform built specifically for Indian hostel ecosystems.
             </p>
           </div>
-          <div style={styles.footerLinks}>
-            <h4 style={styles.footerLinkTitle}>Quick Links</h4>
-            <a href="#home" style={styles.footerLink}>Home</a>
-            <a href="#features" style={styles.footerLink}>Features</a>
-            <a href="#how-it-works" style={styles.footerLink}>How it works</a>
-          </div>
-          <div style={styles.footerLinks}>
-            <h4 style={styles.footerLinkTitle}>Authentication</h4>
-            <span onClick={() => navigate('/login')} style={styles.footerLinkClick}>Login</span>
-            <span onClick={() => navigate('/register')} style={styles.footerLinkClick}>Register</span>
-          </div>
+
+          {/* Links columns */}
+          {[
+            { title: 'Product', links: ['Features', 'Pricing', 'API Docs', 'Status'] },
+            { title: 'Company', links: ['About Us', 'Careers', 'Contact', 'Blog'] },
+            { title: 'Security', links: ['GDPR', 'Data Safety', 'Certificates', 'Uptime'] }
+          ].map((col, idx) => (
+            <div key={idx} style={{ flex: 1, minWidth: '120px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '20px', color: THEME.colors.gray100 }}>
+                {col.title}
+              </h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {col.links.map((link) => (
+                  <li key={link}>
+                    <a
+                      href="#"
+                      style={{
+                        textDecoration: 'none',
+                        color: THEME.colors.gray500,
+                        fontSize: '13px',
+                        transition: THEME.transition
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.color = THEME.colors.purple500;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.color = THEME.colors.gray500;
+                      }}
+                    >
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div style={styles.footerBottom}>
-          <p style={styles.copyright}>&copy; {new Date().getFullYear()} Hostel Help. All rights reserved.</p>
+
+        {/* Divider */}
+        <div style={{ height: '1px', backgroundColor: '#1F2937', marginBottom: '32px' }} />
+
+        {/* Copyright Bar */}
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            color: THEME.colors.gray500,
+            fontSize: '13px'
+          }}
+        >
+          <span>© {new Date().getFullYear()} Hostel Help. All rights reserved.</span>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            <a href="#" style={{ color: THEME.colors.gray500, textDecoration: 'none' }}>Privacy Policy</a>
+            <a href="#" style={{ color: THEME.colors.gray500, textDecoration: 'none' }}>Terms of Service</a>
+          </div>
         </div>
       </footer>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    backgroundColor: '#f8fafc',
-    minHeight: '100vh',
-    scrollBehavior: 'smooth',
-  },
-  hero: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '80px 24px',
-    display: 'grid',
-    gridTemplateColumns: '1.2fr 1fr',
-    gap: '48px',
-    alignItems: 'center',
-  },
-  heroContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  badge: {
-    backgroundColor: '#e0f2fe',
-    color: '#0284c7',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    fontSize: '13px',
-    fontWeight: '700',
-    marginBottom: '20px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  heroTitle: {
-    fontSize: '44px',
-    fontWeight: '800',
-    lineHeight: '1.15',
-    color: '#1e293b',
-    marginBottom: '20px',
-  },
-  gradientText: {
-    color: '#4f46e5',
-  },
-  heroSub: {
-    fontSize: '16px',
-    lineHeight: '1.6',
-    color: '#64748b',
-    marginBottom: '32px',
-    maxWidth: '520px',
-  },
-  heroBtns: {
-    display: 'flex',
-    gap: '16px',
-  },
-  primaryBtn: {
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    padding: '14px 28px',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '15px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)',
-    transition: 'all 0.2s',
-  },
-  secondaryBtn: {
-    backgroundColor: '#ffffff',
-    color: '#4f46e5',
-    border: '1.5px solid #e2e8f0',
-    padding: '14px 28px',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '15px',
-    textDecoration: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  heroGraphic: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  illustrationContainer: {
-    width: '100%',
-    maxWidth: '450px',
-    backgroundColor: '#ffffff',
-    borderRadius: '24px',
-    padding: '12px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    border: '1px solid #e2e8f0',
-  },
-  svg: {
-    borderRadius: '16px',
-  },
-  stats: {
-    backgroundColor: '#e0f2fe',
-    padding: '40px 24px',
-  },
-  statsInner: {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  statItem: {
-    textAlign: 'center',
-  },
-  statNumber: {
-    fontSize: '36px',
-    fontWeight: '800',
-    color: '#0369a1',
-    margin: 0,
-  },
-  statLabel: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#0ea5e9',
-    margin: '4px 0 0 0',
-  },
-  statDivider: {
-    width: '1px',
-    height: '40px',
-    backgroundColor: '#bae6fd',
-  },
-  features: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '90px 24px',
-  },
-  sectionHeader: {
-    textAlign: 'center',
-    marginBottom: '60px',
-  },
-  sectionTitle: {
-    fontSize: '28px',
-    fontWeight: '800',
-    color: '#1e293b',
-    marginBottom: '12px',
-  },
-  sectionSubtitle: {
-    fontSize: '15px',
-    color: '#64748b',
-    maxWidth: '600px',
-    margin: '0 auto',
-  },
-  featuresGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '24px',
-  },
-  featureCard: {
-    backgroundColor: '#ffffff',
-    padding: '32px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-    transition: 'all 0.3s ease',
-  },
-  featureIcon: {
-    fontSize: '32px',
-    display: 'inline-block',
-    marginBottom: '16px',
-  },
-  featureTitle: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: '8px',
-  },
-  featureDesc: {
-    fontSize: '14px',
-    lineHeight: '1.6',
-    color: '#64748b',
-    margin: 0,
-  },
-  howItWorks: {
-    backgroundColor: '#ffffff',
-    borderTop: '1px solid #e2e8f0',
-    borderBottom: '1px solid #e2e8f0',
-    padding: '90px 24px',
-  },
-  stepsContainer: {
-    maxWidth: '1100px',
-    margin: '0 auto',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '32px',
-  },
-  stepCard: {
-    position: 'relative',
-    textAlign: 'center',
-  },
-  stepHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '12px',
-    marginBottom: '16px',
-  },
-  stepNumber: {
-    fontSize: '36px',
-    fontWeight: '800',
-    color: '#e2e8f0',
-  },
-  stepIcon: {
-    fontSize: '36px',
-  },
-  stepTitle: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: '10px',
-  },
-  stepDesc: {
-    fontSize: '14px',
-    lineHeight: '1.5',
-    color: '#64748b',
-    maxWidth: '280px',
-    margin: '0 auto',
-  },
-  contact: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '95px 24px',
-  },
-  contactCard: {
-    backgroundColor: '#4f46e5',
-    borderRadius: '24px',
-    padding: '60px 40px',
-    textAlign: 'center',
-    color: '#ffffff',
-    boxShadow: '0 10px 30px rgba(79, 70, 229, 0.15)',
-  },
-  contactTitle: {
-    fontSize: '32px',
-    fontWeight: '800',
-    marginBottom: '16px',
-    color: '#ffffff',
-  },
-  contactText: {
-    fontSize: '16px',
-    color: '#c7d2fe',
-    maxWidth: '600px',
-    margin: '0 auto 32px auto',
-    lineHeight: '1.6',
-  },
-  contactBtn: {
-    backgroundColor: '#ffffff',
-    color: '#4f46e5',
-    border: 'none',
-    padding: '14px 32px',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '15px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-  },
-  footer: {
-    backgroundColor: '#ffffff',
-    borderTop: '1px solid #e2e8f0',
-    padding: '64px 24px 32px 24px',
-  },
-  footerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr',
-    gap: '48px',
-    marginBottom: '48px',
-  },
-  footerBrand: {},
-  footerLogo: {
-    fontSize: '20px',
-    fontWeight: '800',
-    color: '#4f46e5',
-    display: 'block',
-    marginBottom: '16px',
-  },
-  footerDesc: {
-    fontSize: '14px',
-    color: '#64748b',
-    lineHeight: '1.6',
-    maxWidth: '360px',
-  },
-  footerLinks: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  footerLinkTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: '8px',
-  },
-  footerLink: {
-    color: '#64748b',
-    textDecoration: 'none',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  footerLinkClick: {
-    color: '#64748b',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  footerBottom: {
-    borderTop: '1px solid #f1f5f9',
-    maxWidth: '1200px',
-    margin: '0 auto',
-    paddingTop: '24px',
-    textAlign: 'center',
-  },
-  copyright: {
-    fontSize: '13px',
-    color: '#94a3b8',
-    margin: 0,
-  },
 };
 
 export default Landing;

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { toast } from 'react-toastify';
+import hostelHelpLogo from '../assets/hostel-help-logo.png';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -47,6 +48,24 @@ const Navbar = () => {
             }}
           >
             Submit Complaint
+          </Link>
+          <Link
+            to="/student/profile"
+            style={{
+              ...styles.link,
+              ...(location.pathname === '/student/profile' ? styles.activeLink : {}),
+            }}
+          >
+            My Profile
+          </Link>
+          <Link
+            to="/student/knowledge"
+            style={{
+              ...styles.link,
+              ...(location.pathname === '/student/knowledge' ? styles.activeLink : {}),
+            }}
+          >
+            Knowledge Base
           </Link>
         </>
       );
@@ -139,8 +158,11 @@ const Navbar = () => {
     <nav style={styles.nav}>
       {/* Left — logo */}
       <div style={styles.logo} onClick={() => navigate('/')}>
-        <span style={styles.logoIcon}>🏠</span>
-        <span style={styles.logoText}>Hostel Help</span>
+        <img
+          src={hostelHelpLogo}
+          alt="Hostel Help Logo"
+          className="navbar-logo"
+        />
       </div>
 
       {/* Middle — nav links */}
@@ -299,8 +321,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#ffffff',
-    padding: '0 32px',
-    height: '70px',
+    padding: '0 24px',
+    height: '80px',
     borderBottom: '1px solid #e2e8f0',
     position: 'sticky',
     top: 0,
@@ -309,17 +331,7 @@ const styles = {
   logo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
     cursor: 'pointer',
-  },
-  logoIcon: {
-    fontSize: '22px',
-  },
-  logoText: {
-    color: '#4f46e5',
-    fontSize: '20px',
-    fontWeight: '800',
-    letterSpacing: '-0.5px',
   },
   links: {
     display: 'flex',

@@ -1,58 +1,45 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/authService';
+import { THEME } from '../theme';
+import LoadingSpinner from '../components/LoadingSpinner';
+import hostelHelpLogo from '../assets/hostel-help-logo.png';
 
 const Login = () => {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [activeRole, setActiveRole] = useState('STUDENT');
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleRoleTabClick = (role) => {
-    setActiveRole(role);
-    if (role === 'STUDENT') {
-      setFormData({ email: 'student@hostel.com', password: 'password123' });
-    } else if (role === 'WARDEN') {
-      setFormData({ email: 'warden@hostel.com', password: 'warden123' });
-    } else if (role === 'ADMIN') {
-      setFormData({ email: 'admin@hostel.com', password: 'admin123' });
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error('Please enter both email and password.');
+      return;
+    }
+
     setLoading(true);
-
     try {
-      const response = await api.post('/api/auth/login', formData);
-      const data = response.data;
-
-      // save to context + localStorage
+      const data = await authService.login({ email, password });
       login(data);
-
       toast.success(`Welcome back, ${data.name}!`);
-
-      // redirect based on role
-      if (data.role === 'ADMIN')   navigate('/admin/dashboard');
-      if (data.role === 'WARDEN')  navigate('/warden/dashboard');
-      if (data.role === 'STUDENT') navigate('/student/dashboard');
-
+      
+      if (data.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (data.role === 'WARDEN') {
+        navigate('/warden/dashboard');
+      } else {
+        navigate('/student/dashboard');
+      }
     } catch (error) {
-      const message = error.response?.data?.message
-        || error.response?.data
-        || 'Login failed. Check your credentials.';
+      console.error(error);
+      const message = error.response?.data?.message || 'Invalid email or password. Please try again.';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -60,202 +47,231 @@ const Login = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-
-        {/* Header */}
-        <div style={styles.header}>
-          <h1 style={styles.title}>🏠 Hostel Help</h1>
-          <p style={styles.subtitle}>Sign in to your account</p>
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        width: '100%',
+        backgroundColor: THEME.colors.gray50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontFamily: THEME.fonts.family,
+        padding: '24px'
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '440px',
+          backgroundColor: THEME.colors.white,
+          borderRadius: THEME.radius.card,
+          padding: '40px',
+          boxShadow: THEME.shadows.dropdown,
+          border: `1.5px solid ${THEME.colors.gray200}`
+        }}
+      >
+        {/* App Logo */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '32px',
+            cursor: 'pointer'
+          }}
+          onClick={() => navigate('/')}
+        >
+          <img
+            src={hostelHelpLogo}
+            alt="Hostel Help Logo"
+            style={{
+              height: '56px',
+              width: 'auto',
+              objectFit: 'contain'
+            }}
+          />
         </div>
 
-        {/* Role Tabs */}
-        <div style={styles.tabs}>
-          <button
-            type="button"
-            onClick={() => handleRoleTabClick('STUDENT')}
-            style={{
-              ...styles.tab,
-              backgroundColor: activeRole === 'STUDENT' ? '#4f46e5' : '#f8fafc',
-              color: activeRole === 'STUDENT' ? '#fff' : '#64748b',
-              borderColor: activeRole === 'STUDENT' ? '#4f46e5' : '#e2e8f0',
-            }}
-          >
-            Student
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleTabClick('WARDEN')}
-            style={{
-              ...styles.tab,
-              backgroundColor: activeRole === 'WARDEN' ? '#0ea5e9' : '#f8fafc',
-              color: activeRole === 'WARDEN' ? '#fff' : '#64748b',
-              borderColor: activeRole === 'WARDEN' ? '#0ea5e9' : '#e2e8f0',
-            }}
-          >
-            Warden
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleTabClick('ADMIN')}
-            style={{
-              ...styles.tab,
-              backgroundColor: activeRole === 'ADMIN' ? '#7c3aed' : '#f8fafc',
-              color: activeRole === 'ADMIN' ? '#fff' : '#64748b',
-              borderColor: activeRole === 'ADMIN' ? '#7c3aed' : '#e2e8f0',
-            }}
-          >
-            Admin
-          </button>
+        {/* Header */}
+        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '8px' }}>
+            Welcome back 👋
+          </h2>
+          <p style={{ color: THEME.colors.gray500, fontSize: '14px' }}>
+            Enter your credentials to access your dashboard.
+          </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@hostel.com"
-              required
-              style={styles.input}
-            />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Email */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+              Email Address
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500 }}>✉️</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@university.edu"
+                style={{
+                  width: '100%',
+                  height: '46px',
+                  borderRadius: THEME.radius.input,
+                  border: `1.5px solid ${THEME.colors.gray200}`,
+                  padding: '0 14px 0 40px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: THEME.transition
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = THEME.colors.purple500;
+                  e.target.style.boxShadow = `0 0 0 3px rgba(139,92,246,0.1)`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = THEME.colors.gray200;
+                  e.target.style.boxShadow = 'none';
+                }}
+                required
+              />
+            </div>
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-              style={styles.input}
-            />
+          {/* Password */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: THEME.colors.gray700 }}>
+              Password
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: '14px', color: THEME.colors.gray500 }}>🔒</span>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{
+                  width: '100%',
+                  height: '46px',
+                  borderRadius: THEME.radius.input,
+                  border: `1.5px solid ${THEME.colors.gray200}`,
+                  padding: '0 40px 0 40px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: THEME.transition
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = THEME.colors.purple500;
+                  e.target.style.boxShadow = `0 0 0 3px rgba(139,92,246,0.1)`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = THEME.colors.gray200;
+                  e.target.style.boxShadow = 'none';
+                }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '14px',
+                  background: 'none',
+                  border: 'none',
+                  color: THEME.colors.gray500,
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
+          {/* Remember Me & Forgot Password */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: THEME.colors.gray600 }}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{
+                  accentColor: THEME.colors.purple600,
+                  cursor: 'pointer',
+                  width: '15px',
+                  height: '15px'
+                }}
+              />
+              Remember me
+            </label>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); toast.info("Password recovery details sent to email."); }}
+              style={{ color: THEME.colors.purple600, textDecoration: 'none', fontWeight: '600' }}
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          {/* Sign In Button */}
           <button
             type="submit"
             disabled={loading}
             style={{
-              ...styles.button,
-              opacity: loading ? 0.7 : 1,
+              background: THEME.gradients.primaryBtn,
+              color: THEME.colors.white,
+              border: 'none',
+              height: '46px',
+              borderRadius: THEME.radius.button,
+              fontSize: '15px',
+              fontWeight: '600',
               cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: THEME.shadows.button,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: THEME.transition,
+              marginTop: '8px'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.filter = 'brightness(0.95)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.filter = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
             }}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? <LoadingSpinner size="20px" color="#FFFFFF" /> : 'Sign In'}
           </button>
-
         </form>
 
-        {/* Footer */}
-        <p style={styles.footer}>
-          New student?{' '}
-          <Link to="/register" style={styles.link}>
-            Create an account
-          </Link>
-        </p>
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: THEME.colors.gray200 }} />
+          <span style={{ fontSize: '13px', color: THEME.colors.gray500 }}>or</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: THEME.colors.gray200 }} />
+        </div>
 
+        {/* Redirect link */}
+        <div style={{ textAlign: 'center', fontSize: '14px' }}>
+          <span style={{ color: THEME.colors.gray500 }}>New student? </span>
+          <span
+            onClick={() => navigate('/register')}
+            style={{ color: THEME.colors.purple600, fontWeight: '700', cursor: 'pointer' }}
+          >
+            Register here
+          </span>
+        </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8fafc',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '16px',
-    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)',
-    border: '1px solid #e2e8f0',
-    width: '100%',
-    maxWidth: '420px',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '20px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: '800',
-    color: '#4f46e5',
-    margin: '0 0 8px 0',
-  },
-  subtitle: {
-    fontSize: '15px',
-    color: '#64748b',
-    margin: 0,
-  },
-  tabs: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '24px',
-  },
-  tab: {
-    flex: 1,
-    padding: '10px 6px',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '13px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  input: {
-    padding: '12px 14px',
-    borderRadius: '8px',
-    border: '1.5px solid #e2e8f0',
-    fontSize: '15px',
-    outline: 'none',
-    transition: 'all 0.2s',
-  },
-  button: {
-    padding: '13px',
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    marginTop: '8px',
-  },
-  footer: {
-    textAlign: 'center',
-    marginTop: '24px',
-    fontSize: '14px',
-    color: '#64748b',
-  },
-  link: {
-    color: '#4f46e5',
-    textDecoration: 'none',
-    fontWeight: '600',
-  },
 };
 
 export default Login;
