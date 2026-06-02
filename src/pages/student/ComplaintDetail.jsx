@@ -177,7 +177,7 @@ const StudentComplaintDetail = () => {
         {[1, 2, 3, 4, 5].map((star) => {
           const filled = hoverRating ? star <= hoverRating : star <= rating;
           return (
-            <Star
+            <span
               key={star}
               onClick={() => {
                 if (!isSubmitted) setRating(star);
@@ -188,15 +188,18 @@ const StudentComplaintDetail = () => {
               onMouseLeave={() => {
                 if (!isSubmitted) setHoverRating(0);
               }}
-              size={24}
-              fill={filled ? THEME.colors.yellow500 : 'transparent'}
-              stroke={filled ? THEME.colors.yellow500 : THEME.colors.gray300}
               style={{
+                fontSize: '28px',
                 cursor: isSubmitted ? 'default' : 'pointer',
-                transition: 'transform 0.1s ease',
-                transform: !isSubmitted && hoverRating === star ? 'scale(1.15)' : 'none'
+                color: filled ? '#FBBF24' : THEME.colors.gray300,
+                transition: 'transform 0.1s ease, color 0.1s ease',
+                transform: !isSubmitted && hoverRating === star ? 'scale(1.15)' : 'none',
+                display: 'inline-block',
+                userSelect: 'none'
               }}
-            />
+            >
+              ★
+            </span>
           );
         })}
       </div>

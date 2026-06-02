@@ -49,7 +49,7 @@ const StudentDashboard = () => {
   });
 
   return (
-    <PortalLayout title="Student Dashboard" breadcrumbs={['Dashboard']}>
+    <PortalLayout title="Student Dashboard" breadcrumbs={['Dashboard']} hideHeader={true}>
       {loading ? (
         <LoadingSpinner />
       ) : (

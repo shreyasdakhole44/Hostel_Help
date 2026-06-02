@@ -66,7 +66,7 @@ const AllComplaints = () => {
     fetchData();
   }, []);
 
-  // Pre-select if redirected with state from dashboard
+  // Pre-select if redirected with state from dashboard or query parameter
   useEffect(() => {
     if (location.state?.assignId && complaints.length > 0) {
       const target = complaints.find((c) => c.id === location.state.assignId);
@@ -75,6 +75,31 @@ const AllComplaints = () => {
       }
     }
   }, [location.state, complaints]);
+
+  useEffect(() => {
+    if (location.state?.viewComplaintId && complaints.length > 0) {
+      const target = complaints.find((c) => c.id === location.state.viewComplaintId);
+      if (target) {
+        const localFeedback = localStorage.getItem(`feedback_${target.id}`);
+        if (localFeedback) {
+          const parsed = JSON.parse(localFeedback);
+          target.rating = target.rating || parsed.rating;
+          target.feedbackComment = target.feedbackComment || parsed.feedbackComment;
+        }
+        setViewedComplaint(target);
+        setDetailsModalOpen(true);
+      }
+    }
+  }, [location.state, complaints]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get('search') || location.state?.searchQuery;
+    if (searchParam) {
+      setSearchQuery(searchParam);
+      setAppliedFilters(prev => ({ ...prev, search: searchParam }));
+    }
+  }, [location.search, location.state]);
 
   // Filtering Logic
   const getFilteredComplaints = () => {
@@ -215,6 +240,12 @@ const AllComplaints = () => {
 
   // View details trigger
   const handleViewDetails = (comp) => {
+    const localFeedback = localStorage.getItem(`feedback_${comp.id}`);
+    if (localFeedback) {
+      const parsed = JSON.parse(localFeedback);
+      comp.rating = comp.rating || parsed.rating;
+      comp.feedbackComment = comp.feedbackComment || parsed.feedbackComment;
+    }
     setViewedComplaint(comp);
     setDetailsModalOpen(true);
   };
@@ -774,6 +805,38 @@ const AllComplaints = () => {
                     </p>
                   </div>
                 )}
+
+                {viewedComplaint.rating ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: `1px solid ${THEME.colors.gray100}`, paddingTop: '16px' }}>
+                    <span style={{ fontSize: '11px', color: THEME.colors.gray500, fontWeight: '700', textTransform: 'uppercase' }}>
+                      Student Feedback
+                    </span>
+                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '12px', borderRadius: THEME.radius.small }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: viewedComplaint.feedbackComment ? '8px' : 0 }}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            style={{
+                              fontSize: '18px',
+                              color: star <= viewedComplaint.rating ? '#FBBF24' : THEME.colors.gray200,
+                              userSelect: 'none'
+                            }}
+                          >
+                            ★
+                          </span>
+                        ))}
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#b45309', marginLeft: '6px' }}>
+                          ({viewedComplaint.rating}/5)
+                        </span>
+                      </div>
+                      {viewedComplaint.feedbackComment && (
+                        <p style={{ color: '#451a03', margin: 0, fontStyle: 'italic', fontSize: '13.5px', lineHeight: '1.4' }}>
+                          "{viewedComplaint.feedbackComment}"
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button

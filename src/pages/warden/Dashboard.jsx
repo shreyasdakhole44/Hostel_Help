@@ -151,7 +151,7 @@ const WardenDashboard = () => {
   });
 
   return (
-    <PortalLayout title="Warden Command Dashboard" breadcrumbs={['Dashboard']}>
+    <PortalLayout title="Warden Command Dashboard" breadcrumbs={['Dashboard']} hideHeader={true}>
       {loading ? (
         <LoadingSpinner />
       ) : (

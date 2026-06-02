@@ -34,6 +34,15 @@ const WardenComplaintDetail = () => {
   const fetchComplaintDetail = async () => {
     try {
       const data = await complaintService.getWardenComplaintDetail(id);
+      
+      // Local demo fallback: load from localStorage if not present in backend data
+      const localFeedback = localStorage.getItem(`feedback_${id}`);
+      if (localFeedback) {
+        const parsed = JSON.parse(localFeedback);
+        data.rating = data.rating || parsed.rating;
+        data.feedbackComment = data.feedbackComment || parsed.feedbackComment;
+      }
+
       setComplaint(data);
       
       // Pre-select next status based on state machine
@@ -189,7 +198,7 @@ const WardenComplaintDetail = () => {
       if (step === 'Assigned') return true;
       if (step === 'In Progress') return ['IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(status);
       if (step === 'Resolved') return ['RESOLVED', 'CLOSED'].includes(status);
-      if (step === 'Closed') return status === 'CLOSED';
+      if (step === 'Closed') return status === 'CLOSED' || (complaint.rating !== undefined && complaint.rating !== null && complaint.rating > 0);
       return false;
     };
 
@@ -199,7 +208,7 @@ const WardenComplaintDetail = () => {
       { name: 'Assigned', desc: 'Sent to Warden', done: isCompleted('Assigned'), date: new Date(complaint.createdAt).toLocaleDateString() },
       { name: 'In Progress', desc: 'Warden fixing', done: isCompleted('In Progress'), date: (complaint.status === 'IN_PROGRESS' || ['RESOLVED', 'CLOSED'].includes(status)) ? new Date(complaint.updatedAt || Date.now()).toLocaleDateString() : '—' },
       { name: 'Resolved', desc: 'Warden resolved', done: isCompleted('Resolved'), date: (complaint.status === 'RESOLVED' || status === 'CLOSED') ? new Date(complaint.updatedAt || Date.now()).toLocaleDateString() : '—' },
-      { name: 'Closed', desc: 'Student confirmed', done: isCompleted('Closed'), date: status === 'CLOSED' ? new Date(complaint.updatedAt || Date.now()).toLocaleDateString() : '—' }
+      { name: 'Closed', desc: 'Student confirmed', done: isCompleted('Closed'), date: (status === 'CLOSED' || complaint.rating) ? new Date(complaint.updatedAt || Date.now()).toLocaleDateString() : '—' }
     ];
   };
 
@@ -677,6 +686,55 @@ const WardenComplaintDetail = () => {
                 </div>
               )}
             </div>
+
+            {complaint.rating ? (
+              <div
+                style={{
+                  backgroundColor: THEME.colors.white,
+                  borderRadius: THEME.radius.card,
+                  padding: '24px',
+                  boxShadow: THEME.shadows.card,
+                  border: `1px solid ${THEME.colors.gray200}`,
+                  marginTop: '24px'
+                }}
+              >
+                <h3 style={{ fontSize: '15px', fontWeight: '800', color: THEME.colors.gray900, marginBottom: '16px', marginTop: 0 }}>
+                  Student Resolution Feedback
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '12px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        fontSize: '24px',
+                        color: star <= complaint.rating ? '#FBBF24' : THEME.colors.gray200,
+                        userSelect: 'none'
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span style={{ fontSize: '14px', fontWeight: '700', color: THEME.colors.gray800, marginLeft: '8px' }}>
+                    ({complaint.rating}/5)
+                  </span>
+                </div>
+                {complaint.feedbackComment && (
+                  <p style={{
+                    fontSize: '13.5px',
+                    color: THEME.colors.gray600,
+                    backgroundColor: THEME.colors.gray50,
+                    border: `1px solid ${THEME.colors.gray200}`,
+                    borderRadius: THEME.radius.small,
+                    padding: '12px',
+                    fontStyle: 'italic',
+                    lineHeight: '1.5',
+                    margin: 0
+                  }}>
+                    "{complaint.feedbackComment}"
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
 
         </div>

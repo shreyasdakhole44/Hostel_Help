@@ -10,6 +10,7 @@ const StatusBadge = ({ status }) => {
       case 'IN_PROGRESS':
         return { bg: '#EDE9FE', text: '#5B21B6', dot: '#8B5CF6' };
       case 'RESOLVED':
+      case 'RESOLVED_PENDING':
         return { bg: '#D1FAE5', text: '#065F46', dot: '#10B981' };
       case 'REJECTED':
         return { bg: '#FEE2E2', text: '#991B1B', dot: '#EF4444' };
@@ -19,6 +20,11 @@ const StatusBadge = ({ status }) => {
   };
 
   const { bg, text, dot } = getBadgeStyle();
+
+  let displayStatus = status ? status.replace('_', ' ') : '';
+  if (displayStatus === 'RESOLVED PENDING') {
+    displayStatus = 'RESOLVED';
+  }
 
   return (
     <span
@@ -45,7 +51,7 @@ const StatusBadge = ({ status }) => {
           display: 'inline-block'
         }}
       />
-      {status ? status.replace('_', ' ') : ''}
+      {displayStatus}
     </span>
   );
 };
