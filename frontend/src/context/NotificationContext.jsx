@@ -50,9 +50,14 @@ export const NotificationProvider = ({ children }) => {
     }
 
     const token = user.token;
-    console.log('Attempting STOMP WebSocket connection to ws://localhost:8080/ws/websocket');
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const wsProtocol = backendUrl.startsWith('https') ? 'wss://' : 'ws://';
+    const wsHost = backendUrl.replace(/^(https?:\/\/)/, '');
+    const brokerURL = `${wsProtocol}${wsHost}/ws/websocket`;
+
+    console.log(`Attempting STOMP WebSocket connection to ${brokerURL}`);
     const client = new Client({
-      brokerURL: 'ws://localhost:8080/ws/websocket',
+      brokerURL,
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
