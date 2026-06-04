@@ -580,6 +580,7 @@ const Landing = () => {
       {/* Features Section */}
       <section
         id="features"
+        className="responsive-section"
         style={{
           backgroundColor: THEME.colors.gray50,
           padding: "100px 40px",
@@ -689,6 +690,7 @@ const Landing = () => {
       {/* Complaint Resolution Workflow Section */}
       <section
         id="how-it-works"
+        className="responsive-section"
         style={{ padding: "100px 40px", backgroundColor: THEME.colors.white }}
       >
         <div
@@ -829,6 +831,7 @@ const Landing = () => {
       {/* Stats Section */}
       <section
         id="stats"
+        className="responsive-section"
         style={{
           background: THEME.gradients.hero,
           color: THEME.colors.white,
@@ -1015,6 +1018,7 @@ const Landing = () => {
 
       {/* Why Choose Section */}
       <section
+        className="responsive-section"
         style={{
           backgroundColor: THEME.colors.gray50,
           padding: "100px 40px",
@@ -1141,6 +1145,7 @@ const Landing = () => {
 
       {/* Footer */}
       <footer
+        className="responsive-padding"
         style={{
           backgroundColor: '#0A0F1D',
           color: THEME.colors.white,
