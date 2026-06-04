@@ -52,9 +52,9 @@ const DashboardLayout = ({ title, breadcrumbs, children }) => {
 
         {/* Page Content */}
         <main
+          className="dashboard-main-content"
           style={{
             flex: 1,
-            padding: '32px',
             maxWidth: '1200px',
             width: '100%',
             margin: '0 auto',

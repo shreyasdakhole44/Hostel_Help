@@ -85,6 +85,7 @@ const Register = () => {
       }}
     >
       <div
+        className="responsive-card"
         style={{
           width: '100%',
           maxWidth: '480px',

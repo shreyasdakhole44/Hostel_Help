@@ -145,3 +145,113 @@ body {
     background-color: #f1f5f9;
   }
 }
+
+/* Responsive utilities for landing page and dashboards */
+.responsive-nav-links {
+  display: flex !important;
+}
+
+@media (max-width: 768px) {
+  .responsive-nav-links {
+    display: none !important;
+  }
+
+  .responsive-nav-actions button:last-child {
+    display: none !important; /* Hide Get Started on very small screens */
+  }
+
+  .responsive-hero {
+    padding: 60px 20px !important;
+    text-align: center !important;
+    gap: 40px !important;
+  }
+
+  .responsive-hero h1 {
+    font-size: 32px !important;
+    max-width: 100% !important;
+  }
+
+  .responsive-hero p {
+    font-size: 15px !important;
+    max-width: 100% !important;
+    margin: 0 auto 24px auto !important;
+  }
+
+  .responsive-hero-buttons {
+    justify-content: center !important;
+  }
+
+  .responsive-trustbar {
+    justify-content: center !important;
+  }
+
+  .responsive-section {
+    padding: 60px 20px !important;
+  }
+
+  .responsive-section h2 {
+    font-size: 26px !important;
+    margin-bottom: 32px !important;
+  }
+
+  .responsive-padding {
+    padding: 16px !important;
+  }
+
+  .responsive-gap {
+    gap: 16px !important;
+  }
+
+  /* Responsive layout padding */
+  .portal-main-content,
+  .dashboard-main-content {
+    padding: 16px !important;
+  }
+
+  /* Topbar Hamburger reactive toggle */
+  .topbar-hamburger {
+    display: flex !important;
+  }
+
+  /* Responsive modal constraints */
+  .responsive-modal {
+    width: calc(100% - 32px) !important;
+    margin: 16px !important;
+    max-width: 100% !important;
+  }
+
+  /* Responsive authentication & dashboard card padding */
+  .responsive-card {
+    padding: 24px !important;
+  }
+
+  /* Responsive 1-column grid layout */
+  .responsive-grid-1col {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
+/* Default state for hamburger button on desktop */
+.topbar-hamburger {
+  display: none !important;
+}
+
+/* Default portal & dashboard main content padding for larger viewports */
+.portal-main-content,
+.dashboard-main-content {
+  padding: 32px;
+}
+
+/* Default topbar search styling constraints */
+.topbar-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .topbar-search-wrapper {
+    display: none !important;
+  }
+}

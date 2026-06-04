@@ -45,6 +45,7 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
         {/* Hamburger Menu Icon */}
         <button
           onClick={toggleSidebar}
+          className="topbar-hamburger"
           style={{
             background: 'none',
             border: 'none',
@@ -52,15 +53,10 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
             color: THEME.colors.gray500,
             cursor: 'pointer',
             padding: '4px',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '6px',
-            transition: THEME.transition,
-            // Hide on desktop
-            ...(window.innerWidth >= 768 && {
-              display: 'none'
-            })
+            transition: THEME.transition
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = THEME.colors.gray50;
@@ -81,14 +77,10 @@ const TopBar = ({ title, breadcrumbs = [], toggleSidebar }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         {/* Search Input (Desktop) */}
         <div
+          className="topbar-search-wrapper"
           style={{
             position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            // Hide search bar on mobile screens
-            ...(window.innerWidth < 640 && {
-              display: 'none'
-            })
+            alignItems: 'center'
           }}
         >
           <span

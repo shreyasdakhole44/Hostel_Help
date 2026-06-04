@@ -106,6 +106,7 @@ const Landing = () => {
     >
       {/* Sticky Navbar */}
       <nav
+        className="responsive-padding"
         style={{
           position: "sticky",
           top: 0,
@@ -147,7 +148,7 @@ const Landing = () => {
         </div>
 
         {/* Center: Links */}
-        <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
+        <div className="responsive-nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {["Features", "How it Works", "Stats", "About"].map((link) => (
             <a
               key={link}
@@ -172,7 +173,7 @@ const Landing = () => {
         </div>
 
         {/* Right: Actions */}
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        <div className="responsive-nav-actions" style={{ display: "flex", gap: "16px", alignItems: "center" }}>
           <button
             onClick={() => navigate("/login")}
             style={{
@@ -225,6 +226,7 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section
+        className="responsive-hero"
         style={{
           padding: "100px 40px",
           maxWidth: "1200px",
@@ -285,7 +287,7 @@ const Landing = () => {
           </p>
 
           {/* Hero Buttons */}
-          <div style={{ display: "flex", gap: "16px", marginBottom: "40px" }}>
+          <div className="responsive-hero-buttons" style={{ display: "flex", gap: "16px", marginBottom: "40px" }}>
             <button
               onClick={() => navigate("/register")}
               style={{

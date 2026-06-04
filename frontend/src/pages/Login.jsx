@@ -61,6 +61,7 @@ const Login = () => {
       }}
     >
       <div
+        className="responsive-card"
         style={{
           width: '100%',
           maxWidth: '440px',

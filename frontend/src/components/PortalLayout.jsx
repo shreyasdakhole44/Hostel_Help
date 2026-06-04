@@ -19,9 +19,9 @@ const PortalLayout = ({ title, breadcrumbs = [], children, hideHeader = false })
 
       {/* Main Content */}
       <main
+        className="portal-main-content"
         style={{
           flex: 1,
-          padding: '32px',
           maxWidth: '1200px',
           width: '100%',
           margin: '0 auto',

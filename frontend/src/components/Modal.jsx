@@ -36,7 +36,7 @@ const Modal = ({ isOpen, onClose, title, children, type = 'modal' }) => {
       onClick={onClose}
     >
       <div
-        className={isSlideOver ? 'slide-in-right' : ''}
+        className={`${isSlideOver ? 'slide-in-right' : ''} responsive-modal`}
         style={{
           backgroundColor: THEME.colors.white,
           width: '100%',
