@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.internet.MimeMessage;
+import jakarta.annotation.PostConstruct;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,11 @@ public class EmailService {
 
     @Value("${app.name}")
     private String appName;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("Mail User = " + fromEmail);
+    }
 
     // ── send any email asynchronously ──
     // @Async means this runs in background
