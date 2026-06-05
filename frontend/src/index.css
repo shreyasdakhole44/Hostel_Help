@@ -230,6 +230,11 @@ body {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
+
+  /* Disable translation/scale changes on hover/active on mobile to prevent size/position shifting */
+  button:hover, button:active, [role="button"]:hover, [role="button"]:active {
+    transform: none !important;
+  }
 }
 
 /* Default state for hamburger button on desktop */
