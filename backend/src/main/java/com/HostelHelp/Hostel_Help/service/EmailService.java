@@ -13,6 +13,7 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Async
 public class EmailService {
 
     private final JavaMailSender mailSender;

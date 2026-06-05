@@ -1,8 +1,10 @@
 import React from 'react';
 import { THEME } from '../theme';
 
-const LoadingSpinner = ({ size = '40px', color, fullPage = false }) => {
+const LoadingSpinner = ({ size = '40px', color, fullPage = false, inline = false }) => {
   const spinnerColor = color || THEME.colors.purple600;
+
+  const isInline = inline || (typeof size === 'string' && size.endsWith('px') && parseFloat(size) <= 30 && !fullPage);
 
   const spinner = (
     <div
@@ -37,6 +39,10 @@ const LoadingSpinner = ({ size = '40px', color, fullPage = false }) => {
         {spinner}
       </div>
     );
+  }
+
+  if (isInline) {
+    return spinner;
   }
 
   return (
