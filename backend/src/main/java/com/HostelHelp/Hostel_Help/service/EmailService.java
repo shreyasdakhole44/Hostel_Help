@@ -7,6 +7,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 
 import jakarta.mail.internet.MimeMessage;
 import jakarta.annotation.PostConstruct;
@@ -25,9 +30,15 @@ public class EmailService {
     @Value("${app.name}")
     private String appName;
 
+    @Value("${brevo.api.key:}")
+    private String brevoApiKey;
+
+    private RestTemplate restTemplate;
+
     @PostConstruct
     public void init() {
         System.out.println("Mail User = " + fromEmail);
+        this.restTemplate = new RestTemplate();
     }
 
     // ── send any email asynchronously ──
@@ -35,6 +46,11 @@ public class EmailService {
     // your API response does not wait for email to send
     @Async
     public void sendEmail(String toEmail, String subject, String body) {
+        if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+            sendViaBrevo(toEmail, subject, body);
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -49,6 +65,46 @@ public class EmailService {
 
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    private void sendViaBrevo(String toEmail, String subject, String body) {
+        try {
+            String url = "https://api.brevo.com/v3/smtp/email";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("accept", "application/json");
+            headers.set("api-key", brevoApiKey);
+
+            java.util.Map<String, Object> sender = new java.util.HashMap<>();
+            sender.put("name", appName);
+            sender.put("email", fromEmail);
+
+            java.util.Map<String, Object> recipient = new java.util.HashMap<>();
+            recipient.put("email", toEmail);
+
+            java.util.List<java.util.Map<String, Object>> toList = new java.util.ArrayList<>();
+            toList.add(recipient);
+
+            java.util.Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("sender", sender);
+            payload.put("to", toList);
+            payload.put("subject", subject);
+            payload.put("htmlContent", body);
+
+            HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+            
+            log.info("Sending email to {} via Brevo API...", toEmail);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent successfully to {} via Brevo API. Response: {}", toEmail, response.getBody());
+            } else {
+                log.error("Failed to send email via Brevo. Status: {}, Response: {}", response.getStatusCode(), response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("Exception occurred while sending email to {} via Brevo: {}", toEmail, e.getMessage(), e);
         }
     }
 
