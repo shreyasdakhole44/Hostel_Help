@@ -80,11 +80,12 @@ public class EmailService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("accept", "application/json");
             
-            String maskedKey = (brevoApiKey != null && brevoApiKey.length() > 8) 
-                    ? brevoApiKey.substring(0, 4) + "..." + brevoApiKey.substring(brevoApiKey.length() - 4)
+            String cleanApiKey = (brevoApiKey != null) ? brevoApiKey.trim() : "";
+            String maskedKey = (cleanApiKey.length() > 8) 
+                    ? cleanApiKey.substring(0, 4) + "..." + cleanApiKey.substring(cleanApiKey.length() - 4)
                     : "INVALID/SHORT";
-            log.info("Preparing Brevo email send. API Key used: {}", maskedKey);
-            headers.set("api-key", brevoApiKey);
+            log.info("Preparing Brevo email send. API Key length: {}, masked: {}", cleanApiKey.length(), maskedKey);
+            headers.set("api-key", cleanApiKey);
 
             String senderEmail = (brevoSenderEmail != null && !brevoSenderEmail.trim().isEmpty()) 
                     ? brevoSenderEmail.trim() 
