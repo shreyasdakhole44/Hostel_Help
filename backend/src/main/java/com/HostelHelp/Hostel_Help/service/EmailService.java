@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import jakarta.mail.internet.MimeMessage;
 import jakarta.annotation.PostConstruct;
@@ -32,6 +33,9 @@ public class EmailService {
 
     @Value("${brevo.api.key:}")
     private String brevoApiKey;
+
+    @Value("${brevo.sender.email:}")
+    private String brevoSenderEmail;
 
     private RestTemplate restTemplate;
 
@@ -75,11 +79,21 @@ public class EmailService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("accept", "application/json");
+            
+            String maskedKey = (brevoApiKey != null && brevoApiKey.length() > 8) 
+                    ? brevoApiKey.substring(0, 4) + "..." + brevoApiKey.substring(brevoApiKey.length() - 4)
+                    : "INVALID/SHORT";
+            log.info("Preparing Brevo email send. API Key used: {}", maskedKey);
             headers.set("api-key", brevoApiKey);
+
+            String senderEmail = (brevoSenderEmail != null && !brevoSenderEmail.trim().isEmpty()) 
+                    ? brevoSenderEmail.trim() 
+                    : fromEmail;
+            log.info("Brevo sender email: {}", senderEmail);
 
             java.util.Map<String, Object> sender = new java.util.HashMap<>();
             sender.put("name", appName);
-            sender.put("email", fromEmail);
+            sender.put("email", senderEmail);
 
             java.util.Map<String, Object> recipient = new java.util.HashMap<>();
             recipient.put("email", toEmail);
@@ -103,6 +117,9 @@ public class EmailService {
             } else {
                 log.error("Failed to send email via Brevo. Status: {}, Response: {}", response.getStatusCode(), response.getBody());
             }
+        } catch (HttpStatusCodeException e) {
+            log.error("HTTP error occurred while sending email via Brevo. Status: {}, Response Body: {}", 
+                    e.getStatusCode(), e.getResponseBodyAsString(), e);
         } catch (Exception e) {
             log.error("Exception occurred while sending email to {} via Brevo: {}", toEmail, e.getMessage(), e);
         }
