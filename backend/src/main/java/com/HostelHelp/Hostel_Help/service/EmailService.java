@@ -80,7 +80,7 @@ public class EmailService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("accept", "application/json");
             
-            String cleanApiKey = (brevoApiKey != null) ? brevoApiKey.trim() : "";
+            String cleanApiKey = (brevoApiKey != null) ? brevoApiKey.replaceAll("[^a-zA-Z0-9-_]", "") : "";
             String maskedKey = (cleanApiKey.length() > 8) 
                     ? cleanApiKey.substring(0, 4) + "..." + cleanApiKey.substring(cleanApiKey.length() - 4)
                     : "INVALID/SHORT";
