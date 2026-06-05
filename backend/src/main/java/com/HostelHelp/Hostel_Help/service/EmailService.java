@@ -151,24 +151,14 @@ public class EmailService {
                                    String studentName,
                                    Long complaintId) {
         String subject = appName + " — New Complaint Assigned to You";
-        String body = "<div style='font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;'>"
-                + "<div style='background:#4f46e5;padding:28px 32px;border-radius:12px 12px 0 0;'>"
-                + "<h1 style='color:#fff;font-size:20px;margin:0;'>New Complaint Assigned</h1>"
-                + "</div>"
-                + "<div style='background:#ffffff;padding:28px 32px;border:1px solid #e2e8f0;'>"
-                + "<p style='color:#374151;font-size:15px;'>Hi <strong>" + wardenName + "</strong>,</p>"
-                + "<p style='color:#374151;font-size:15px;'>A new complaint has been assigned to you by Admin.</p>"
-                + "<div style='background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:20px 0;'>"
-                + "<p style='color:#64748b;font-size:12px;font-weight:700;text-transform:uppercase;margin:0 0 6px 0;'>Complaint</p>"
-                + "<p style='color:#1e293b;font-size:16px;font-weight:600;margin:0 0 8px 0;'>" + complaintTitle + "</p>"
-                + "<p style='color:#64748b;font-size:13px;margin:0;'>Submitted by: <strong>" + studentName + "</strong></p>"
-                + "</div>"
-                + "<p style='color:#374151;font-size:14px;'>Please log in to review and start working on this complaint.</p>"
-                + "</div>"
-                + "<div style='background:#f8fafc;padding:16px 32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none;'>"
-                + "<p style='color:#94a3b8;font-size:12px;margin:0;text-align:center;'>Hostel Help — Complaint Management System</p>"
-                + "</div>"
-                + "</div>";
+        String body = buildEmail(
+                wardenName,
+                "A new complaint has been assigned to you by Admin.",
+                complaintTitle,
+                "ASSIGNED",
+                "Submitted by: <strong>" + studentName + "</strong>. Please log in to review and start working on this complaint.",
+                complaintId
+        );
         sendEmail(wardenEmail, subject, body);
     }
 
