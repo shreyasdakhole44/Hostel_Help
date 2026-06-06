@@ -1,7 +1,7 @@
 # Hostel Help 🏢
 
 Hostel Help is an enterprise-grade, full-stack digital grievance management system designed to automate, track, and streamline issue reporting and resolution in student residential housing. It replaces slow, manual paper-based reporting with a structured, real-time collaboration workflow between **Students**, **Coordinators (Administrators)**, and **Maintenance Staff (Wardens)**.
-
+ LIVE DEMO - [https://hostelhelps.netlify.app/]
 ---
 
 ## 🌟 Key Product Features
